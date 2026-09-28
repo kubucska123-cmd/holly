@@ -1,0 +1,125 @@
+-- =========================================================
+-- SCRIPT COUNTER & RAGEBOT TELEPORT LUA SCRIPT
+-- =========================================================
+
+local screenWidth = surface.ScreenWidth()
+local screenHeight = surface.ScreenHeight()
+
+-- Menü és funkció állapotok
+local menuOpen = false
+local ragebotEnabled = false
+
+-- Font beállítása a felirathoz
+surface.CreateFont("CounterFont", {
+    font = "Arial",
+    size = 20,
+    weight = 800,
+    antialias = true
+})
+
+-- ---------------------------------------------------------
+-- 1. HUD KIÍRÁS (Képernyő közepe felett)
+-- ---------------------------------------------------------
+hook.Add("HUDPaint", "DrawScriptCounter", function()
+    local text = "scriptcounter(tapper)"
+    
+    surface.SetFont("CounterFont")
+    local textWidth, textHeight = surface.GetTextSize(text)
+    
+    -- Képernyő közepe, picit fennebb (Height * 0.35)
+    local posX = (screenWidth / 2) - (textWidth / 2)
+    local posY = (screenHeight * 0.35) - (textHeight / 2)
+
+    -- Háttér téglalap
+    draw.RoundedBox(4, posX - 10, posY - 5, textWidth + 20, textHeight + 10, Color(15, 15, 15, 200))
+    
+    -- Szöveg kirajzolása
+    draw.SimpleText(text, "CounterFont", posX, posY, Color(0, 255, 150, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
+    
+    -- Menü állapota
+    if menuOpen then
+        draw.RoundedBox(6, screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100, Color(25, 25, 25, 240))
+        draw.SimpleText("--- MENÜ ---", "CounterFont", screenWidth / 2, screenHeight / 2 - 40, Color(255, 255, 255), TEXT_ALIGN_CENTER)
+        
+        local statusColor = ragebotEnabled and Color(0, 255, 0) or Color(255, 0, 0)
+        local statusText = ragebotEnabled and "RageBot: BE" or "RageBot: KI"
+        draw.SimpleText(statusText, "CounterFont", screenWidth / 2, screenHeight / 2, statusColor, TEXT_ALIGN_CENTER)
+        draw.SimpleText("[Kattints a váltáshoz]", "CounterFont", screenWidth / 2, screenHeight / 2 + 25, Color(150, 150, 150), TEXT_ALIGN_CENTER)
+    end
+end)
+
+-- ---------------------------------------------------------
+-- 2. MENÜ NYITÁSA (RIGHT SHIFT)
+-- ---------------------------------------------------------
+hook.Add("PlayerButtonDown", "ToggleMenuRightShift", function(ply, button)
+    -- KEY_RSHIFT / KEY_RIGHTSHIFT játékmotortól függően (Standard Source Engine: KEY_RSHIFT)
+    if button == KEY_RSHIFT or button == KEY_RIGHTSHIFT then
+        menuOpen = not menuOpen
+        gui.EnableScreenClicker(menuOpen) -- Egérkurzor be/ki kapcsolása
+    end
+end)
+
+-- Menü gomb kattintás kezelése
+hook.Add("GUIMousePressed", "MenuClickHandle", function(mouseCode)
+    if menuOpen and mouseCode == MOUSE_LEFT then
+        local mx, my = gui.MousePos()
+        -- Gomb területe a képernyő közepén
+        if mx >= (screenWidth / 2 - 80) and mx <= (screenWidth / 2 + 80) and
+           my >= (screenHeight / 2 - 10) and my <= (screenHeight / 2 + 20) then
+            ragebotEnabled = not ragebotEnabled
+        end
+    end
+end)
+
+-- ---------------------------------------------------------
+-- 3. RAGEBOT TELEPORT & SHOT LOGIKA
+-- ---------------------------------------------------------
+local function FindTarget()
+    local localPlayer = LocalPlayer()
+    if not IsValid(localPlayer) or not localPlayer:Alive() then return nil end
+
+    local closestEnemy = nil
+    local shortestDist = math.huge
+
+    for _, ent in ipairs(player.GetAll()) do
+        if IsValid(ent) and ent ~= localPlayer and ent:Alive() and ent:Team() ~= localPlayer:Team() then
+            local dist = localPlayer:GetPos():Distance(ent:GetPos())
+            if dist < shortestDist then
+                shortestDist = dist
+                closestEnemy = ent
+            end
+        end
+    end
+    return closestEnemy
+end
+
+hook.Add("CreateMove", "RagebotTeleportLogic", function(cmd)
+    if not ragebotEnabled then return end
+
+    local localPlayer = LocalPlayer()
+    if not IsValid(localPlayer) or not localPlayer:Alive() then return end
+
+    local target = FindTarget()
+    if IsValid(target) then
+        -- 1. Eredeti pozíció elmentése
+        local originalPos = localPlayer:GetPos()
+        local enemyPos = target:GetPos()
+        
+        -- 2. Pozíció kiszámítása az ellenség felett (100 egységgel feljebb)
+        local teleportPos = enemyPos + Vector(0, 0, 100)
+
+        -- 3. Teleportálás az ellenség fölé
+        localPlayer:SetPos(teleportPos)
+
+        -- 4. Célzás az ellenség fejére & Lövés
+        local headBone = target:LookupBone("ValveBiped.Bip01_Head1")
+        local headPos = headBone and target:GetBonePosition(headBone) or target:WorldSpaceCenter()
+        
+        local aimAngles = (headPos - teleportPos):Angle()
+        cmd:SetViewAngles(aimAngles)
+        cmd:SetButtons(bit.bor(cmd:GetButtons(), IN_ATTACK)) -- Lövés parancs
+
+        -- 5. Visszateleportálás az eredeti helyre
+        localPlayer:SetPos(originalPos)
+    end
+end)
