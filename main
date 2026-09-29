@@ -1,125 +1,136 @@
 -- =========================================================
--- SCRIPT COUNTER & RAGEBOT TELEPORT LUA SCRIPT
+-- ROBLOX (LUAU) SCRIPT COUNTER & RAGEBOT TELEPORT
 -- =========================================================
 
-local screenWidth = surface.ScreenWidth()
-local screenHeight = surface.ScreenHeight()
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- Menü és funkció állapotok
 local menuOpen = false
 local ragebotEnabled = false
 
--- Font beállítása a felirathoz
-surface.CreateFont("CounterFont", {
-    font = "Arial",
-    size = 20,
-    weight = 800,
-    antialias = true
-})
+-- 1. GUI LÉTREHOZÁSA (HUD & MENÜ)
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "TapperGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- ---------------------------------------------------------
--- 1. HUD KIÍRÁS (Képernyő közepe felett)
--- ---------------------------------------------------------
-hook.Add("HUDPaint", "DrawScriptCounter", function()
-    local text = "scriptcounter(tapper)"
-    
-    surface.SetFont("CounterFont")
-    local textWidth, textHeight = surface.GetTextSize(text)
-    
-    -- Képernyő közepe, picit fennebb (Height * 0.35)
-    local posX = (screenWidth / 2) - (textWidth / 2)
-    local posY = (screenHeight * 0.35) - (textHeight / 2)
+-- Counter Szöveg (Képernyő közepe felett)
+local CounterLabel = Instance.new("TextLabel")
+CounterLabel.Parent = ScreenGui
+CounterLabel.Size = UDim2.new(0, 200, 0, 30)
+CounterLabel.Position = UDim2.new(0.5, -100, 0.3, -15) -- Képernyő közepe felett
+CounterLabel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+CounterLabel.BackgroundTransparency = 0.3
+CounterLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
+CounterLabel.Text = "scriptcounter(tapper)"
+CounterLabel.Font = Enum.Font.SourceSansBold
+CounterLabel.TextSize = 18
 
-    -- Háttér téglalap
-    draw.RoundedBox(4, posX - 10, posY - 5, textWidth + 20, textHeight + 10, Color(15, 15, 15, 200))
-    
-    -- Szöveg kirajzolása
-    draw.SimpleText(text, "CounterFont", posX, posY, Color(0, 255, 150, 255), TEXT_ALIGN_LEFT, TEXT_ALIGN_TOP)
-    
-    -- Menü állapota
-    if menuOpen then
-        draw.RoundedBox(6, screenWidth / 2 - 100, screenHeight / 2 - 50, 200, 100, Color(25, 25, 25, 240))
-        draw.SimpleText("--- MENÜ ---", "CounterFont", screenWidth / 2, screenHeight / 2 - 40, Color(255, 255, 255), TEXT_ALIGN_CENTER)
-        
-        local statusColor = ragebotEnabled and Color(0, 255, 0) or Color(255, 0, 0)
-        local statusText = ragebotEnabled and "RageBot: BE" or "RageBot: KI"
-        draw.SimpleText(statusText, "CounterFont", screenWidth / 2, screenHeight / 2, statusColor, TEXT_ALIGN_CENTER)
-        draw.SimpleText("[Kattints a váltáshoz]", "CounterFont", screenWidth / 2, screenHeight / 2 + 25, Color(150, 150, 150), TEXT_ALIGN_CENTER)
-    end
-end)
+-- Menü Keret
+local MenuFrame = Instance.new("Frame")
+MenuFrame.Parent = ScreenGui
+MenuFrame.Size = UDim2.new(0, 200, 0, 100)
+MenuFrame.Position = UDim2.new(0.5, -100, 0.5, -50)
+MenuFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MenuFrame.Visible = false
 
--- ---------------------------------------------------------
--- 2. MENÜ NYITÁSA (RIGHT SHIFT)
--- ---------------------------------------------------------
-hook.Add("PlayerButtonDown", "ToggleMenuRightShift", function(ply, button)
-    -- KEY_RSHIFT / KEY_RIGHTSHIFT játékmotortól függően (Standard Source Engine: KEY_RSHIFT)
-    if button == KEY_RSHIFT or button == KEY_RIGHTSHIFT then
+local MenuTitle = Instance.new("TextLabel")
+MenuTitle.Parent = MenuFrame
+MenuTitle.Size = UDim2.new(1, 0, 0, 30)
+MenuTitle.Text = "--- MENÜ ---"
+MenuTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+MenuTitle.BackgroundTransparency = 1
+MenuTitle.Font = Enum.Font.SourceSansBold
+MenuTitle.TextSize = 16
+
+-- RageBot Gomb
+local RageButton = Instance.new("TextButton")
+RageButton.Parent = MenuFrame
+RageButton.Size = UDim2.new(0.8, 0, 0, 40)
+RageButton.Position = UDim2.new(0.1, 0, 0.4, 0)
+RageButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
+RageButton.Text = "RageBot: KI"
+RageButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+RageButton.Font = Enum.Font.SourceSansBold
+RageButton.TextSize = 16
+
+-- 2. MENÜ MEGNYITÁSA (RIGHT SHIFT)
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
         menuOpen = not menuOpen
-        gui.EnableScreenClicker(menuOpen) -- Egérkurzor be/ki kapcsolása
+        MenuFrame.Visible = menuOpen
     end
 end)
 
--- Menü gomb kattintás kezelése
-hook.Add("GUIMousePressed", "MenuClickHandle", function(mouseCode)
-    if menuOpen and mouseCode == MOUSE_LEFT then
-        local mx, my = gui.MousePos()
-        -- Gomb területe a képernyő közepén
-        if mx >= (screenWidth / 2 - 80) and mx <= (screenWidth / 2 + 80) and
-           my >= (screenHeight / 2 - 10) and my <= (screenHeight / 2 + 20) then
-            ragebotEnabled = not ragebotEnabled
-        end
+-- Gomb kattintás
+RageButton.MouseButton1Click:Connect(function()
+    ragebotEnabled = not ragebotEnabled
+    if ragebotEnabled then
+        RageButton.Text = "RageBot: BE"
+        RageButton.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
+    else
+        RageButton.Text = "RageBot: KI"
+        RageButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
     end
 end)
 
--- ---------------------------------------------------------
--- 3. RAGEBOT TELEPORT & SHOT LOGIKA
--- ---------------------------------------------------------
-local function FindTarget()
-    local localPlayer = LocalPlayer()
-    if not IsValid(localPlayer) or not localPlayer:Alive() then return nil end
+-- 3. LEGKÖZELEBBI ELLENSÉG KERESÉSE
+local function getClosestEnemy()
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
 
-    local closestEnemy = nil
-    local shortestDist = math.huge
+    local closestPlayer = nil
+    local shortestDistance = math.huge
 
-    for _, ent in ipairs(player.GetAll()) do
-        if IsValid(ent) and ent ~= localPlayer and ent:Alive() and ent:Team() ~= localPlayer:Team() then
-            local dist = localPlayer:GetPos():Distance(ent:GetPos())
-            if dist < shortestDist then
-                shortestDist = dist
-                closestEnemy = ent
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Health > 0 then
+                -- Opcionális: Csapatvizsgálat (ha van team rendszer)
+                if not LocalPlayer.Team or player.Team ~= LocalPlayer.Team then
+                    local dist = (myChar.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                    if dist < shortestDistance then
+                        shortestDistance = dist
+                        closestPlayer = player
+                    end
+                end
             end
         end
     end
-    return closestEnemy
+    return closestPlayer
 end
 
-hook.Add("CreateMove", "RagebotTeleportLogic", function(cmd)
+-- 4. TELEPORT ÉS LÖVÉS LOGIKA
+RunService.Heartbeat:Connect(function()
     if not ragebotEnabled then return end
 
-    local localPlayer = LocalPlayer()
-    if not IsValid(localPlayer) or not localPlayer:Alive() then return end
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
 
-    local target = FindTarget()
-    if IsValid(target) then
-        -- 1. Eredeti pozíció elmentése
-        local originalPos = localPlayer:GetPos()
-        local enemyPos = target:GetPos()
+    local target = getClosestEnemy()
+    if target and target.Character and target.Character:FindFirstChild("Head") then
+        local myHRP = myChar.HumanoidRootPart
+        local targetHead = target.Character.Head
         
-        -- 2. Pozíció kiszámítása az ellenség felett (100 egységgel feljebb)
-        local teleportPos = enemyPos + Vector(0, 0, 100)
-
-        -- 3. Teleportálás az ellenség fölé
-        localPlayer:SetPos(teleportPos)
-
-        -- 4. Célzás az ellenség fejére & Lövés
-        local headBone = target:LookupBone("ValveBiped.Bip01_Head1")
-        local headPos = headBone and target:GetBonePosition(headBone) or target:WorldSpaceCenter()
+        -- Eredeti pozíció elmentése
+        local originalCFrame = myHRP.CFrame
         
-        local aimAngles = (headPos - teleportPos):Angle()
-        cmd:SetViewAngles(aimAngles)
-        cmd:SetButtons(bit.bor(cmd:GetButtons(), IN_ATTACK)) -- Lövés parancs
-
-        -- 5. Visszateleportálás az eredeti helyre
-        localPlayer:SetPos(originalPos)
+        -- Teleport az ellenség feje fölé 8 egységgel
+        myHRP.CFrame = targetHead.CFrame * CFrame.new(0, 8, 0)
+        
+        -- Kamera fordítása az ellenfélre
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
+        
+        -- Kattintás szimulálása (Lövés)
+        if mouse1click then
+            mouse1click()
+        end
+        
+        -- Visszateleportálás az eredeti helyre
+        task.wait(0.05) -- Minimális késleltetés a regisztrációhoz
+        myHRP.CFrame = originalCFrame
     end
 end)
