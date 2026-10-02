@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Xenoware // Ultimate Mobile Pro Edition [Clean UI, Fully Configurable, 100% Safe]
+-- Xenoware // Ultimate Mobile Elite Edition [Advanced UI, Active Tabs, 100% Safe]
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -33,7 +33,7 @@ getgenv().XenowareOptions = {
     FlySpeed = 50,
 }
 
--- Előző GUI eltávolítása törléshez
+-- Előző GUI eltávolítása
 pcall(function()
     if CoreGui:FindFirstChild("XenowareMobileUI") then
         CoreGui.XenowareMobileUI:Destroy()
@@ -41,7 +41,7 @@ pcall(function()
 end)
 
 -- ==============================================================================
--- UI LÉTREHOZÁSA (MODERN DARK / NEON GREEN DESIGN)
+-- ELIT UI LÉTREHOZÁSA (MODERN DARK / NEON GREEN ACTIVE TABS)
 -- ==============================================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenowareMobileUI"
@@ -70,11 +70,11 @@ FOVCorner.Parent = FOVFrame
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "MenuToggle"
 ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 128)
 ToggleButton.BorderSizePixel = 2
 ToggleButton.Position = UDim2.new(0, 15, 0, 70)
-ToggleButton.Size = UDim2.new(0, 120, 0, 42)
+ToggleButton.Size = UDim2.new(0, 125, 0, 42)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Text = "⚡ XENOWARE"
 ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 128)
@@ -91,8 +91,8 @@ MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Color3.fromRGB(14, 14, 14)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
 MainFrame.BorderSizePixel = 1
-MainFrame.Position = UDim2.new(0.5, -170, 0.5, -200)
-MainFrame.Size = UDim2.new(0, 340, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -170, 0.5, -205)
+MainFrame.Size = UDim2.new(0, 340, 0, 410)
 MainFrame.Visible = false
 
 local MainCorner = Instance.new("UICorner")
@@ -115,7 +115,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.Size = UDim2.new(1, -50, 1, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Xenoware // Pro Mobile"
+TitleLabel.Text = "Xenoware // Elite Mobile"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
 TitleLabel.TextSize = 13
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -136,7 +136,7 @@ CloseCorner.Parent = CloseBtn
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 ToggleButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
--- Fülek (Tabs) sávja
+-- Fülek (Tabs) sávja tökéletes visszajelzéssel
 local TabBar = Instance.new("Frame")
 TabBar.Parent = MainFrame
 TabBar.BackgroundTransparency = 1
@@ -151,21 +151,25 @@ TabListLayout.Padding = UDim.new(0, 4)
 
 local tabs = {"Combat", "Visuals", "Skins", "Misc"}
 local contentFrames = {}
+local tabButtons = {}
 
 for i, tabName in ipairs(tabs) do
     local tabBtn = Instance.new("TextButton")
     tabBtn.Parent = TabBar
-    tabBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-    tabBtn.BorderColor3 = Color3.fromRGB(45, 45, 45)
+    tabBtn.BackgroundColor3 = (i == 1) and Color3.fromRGB(0, 45, 25) or Color3.fromRGB(22, 22, 22)
+    tabBtn.BorderColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(45, 45, 45)
+    tabBtn.BorderSizePixel = 1
     tabBtn.Size = UDim2.new(0.238, 0, 1, 0)
     tabBtn.Font = Enum.Font.GothamBold
     tabBtn.Text = tabName
-    tabBtn.TextColor3 = Color3.fromRGB(170, 170, 170)
+    tabBtn.TextColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(170, 170, 170)
     tabBtn.TextSize = 11
 
     local tabCorner = Instance.new("UICorner")
     tabCorner.CornerRadius = UDim.new(0, 6)
     tabCorner.Parent = tabBtn
+
+    tabButtons[tabName] = tabBtn
 
     local cFrame = Instance.new("ScrollingFrame")
     cFrame.Parent = MainFrame
@@ -184,12 +188,25 @@ for i, tabName in ipairs(tabs) do
     contentFrames[tabName] = cFrame
 
     tabBtn.MouseButton1Click:Connect(function()
-        for _, frame in pairs(contentFrames) do frame.Visible = false end
+        -- Minden tartalom elrejtése és gomb alaphelyzetbe állítása
+        for name, frame in pairs(contentFrames) do
+            frame.Visible = false
+        end
+        for name, btn in pairs(tabButtons) do
+            btn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+            btn.TextColor3 = Color3.fromRGB(170, 170, 170)
+            btn.BorderColor3 = Color3.fromRGB(45, 45, 45)
+        end
+        
+        -- Aktív fül megjelenítése és kiemelése
         cFrame.Visible = true
+        tabBtn.BackgroundColor3 = Color3.fromRGB(0, 45, 25)
+        tabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
+        tabBtn.BorderColor3 = Color3.fromRGB(0, 255, 128)
     end)
 end
 
--- UI Segédfüggvények: Kapcsolók és Beállítások (Mobilbarát gombokkal)
+-- UI Segédfüggvények: Kapcsolók és Beállítások
 local function AddToggle(tabName, text, toggleKey)
     local parent = contentFrames[tabName]
     if not parent then return end
@@ -251,7 +268,7 @@ local function AddButtonOption(tabName, text, options, optionKey)
 end
 
 -- ==============================================================================
--- MENÜ ELEMEK HOZZÁADÁSA (SZABÁLYOZHATÓ SETTINGSEKKEL)
+-- MENÜ ELEMEK HOZZÁADÁSA FÜLÖNKÉNT
 -- ==============================================================================
 
 -- COMBAT
@@ -352,7 +369,7 @@ RunService.RenderStepped:Connect(function()
     FOVFrame.Visible = getgenv().XenowareToggles.ShowFOV
 end)
 
--- Aimbot & Ragebot logika (Smoothness és HitPart támogatással)
+-- Aimbot & Ragebot logika
 RunService.RenderStepped:Connect(function()
     local toggles = getgenv().XenowareToggles
     if not toggles.AimEnabled and not toggles.RageEnabled then return end
@@ -493,4 +510,4 @@ pcall(function()
     end)
 end)
 
-print("Xenoware Pro Mobile Edition sikeresen betöltődött!")
+print("Xenoware Elite Mobile Edition sikeresen betöltődött!")
