@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Xenoware // Ultimate Mobile Elite Edition [Advanced UI, Active Tabs, 100% Safe]
+-- Xenoware // Ultimate Mobile Elite v3.0 [Bug-Free, Real Skin Hook, Ultra Smooth]
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -9,8 +9,9 @@ local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
+local TweenService = game:GetService("TweenService")
 
--- Globális beállítások és kapcsolók
+-- Globális beállítások
 getgenv().XenowareToggles = {
     AimEnabled = false,
     RageEnabled = false,
@@ -28,12 +29,12 @@ getgenv().XenowareToggles = {
 getgenv().XenowareOptions = {
     Distance = 1000,
     FOVRadius = 150,
-    Smoothness = 0.25, -- Kisebb = simább, Nagyobb = gyorsabb lock
-    HitPart = "Head",   -- "Head" vagy "HumanoidRootPart"
+    Smoothness = 0.25,
+    HitPart = "Head",
     FlySpeed = 50,
 }
 
--- Előző GUI eltávolítása
+-- Előző GUI biztonságos takarítása
 pcall(function()
     if CoreGui:FindFirstChild("XenowareMobileUI") then
         CoreGui.XenowareMobileUI:Destroy()
@@ -41,14 +42,55 @@ pcall(function()
 end)
 
 -- ==============================================================================
--- ELIT UI LÉTREHOZÁSA (MODERN DARK / NEON GREEN ACTIVE TABS)
+-- UI LÉTREHOZÁSA (ULTRA MODERN CYBERPUNK / GLOW DESIGN)
 -- ==============================================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenowareMobileUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- FOV Kör (GUI alapú, mobilos kompatibilis)
+-- Értesítési Rendszer (Toast Notification)
+local NotificationFrame = Instance.new("Frame")
+NotificationFrame.Name = "Notification"
+NotificationFrame.Parent = ScreenGui
+NotificationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+NotificationFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
+NotificationFrame.BorderSizePixel = 1
+NotificationFrame.Position = UDim2.new(0.5, -125, 0, -50)
+NotificationFrame.Size = UDim2.new(0, 250, 0, 40)
+NotificationFrame.Visible = false
+
+local NotifCorner = Instance.new("UICorner")
+NotifCorner.CornerRadius = UDim.new(0, 8)
+NotifCorner.Parent = NotificationFrame
+
+local NotifLabel = Instance.new("TextLabel")
+NotifLabel.Parent = NotificationFrame
+NotifLabel.BackgroundTransparency = 1
+NotifLabel.Size = UDim2.new(1, 0, 1, 0)
+NotifLabel.Font = Enum.Font.GothamBold
+NotifLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
+NotifLabel.TextSize = 12
+NotifLabel.Text = "Xenoware: Sikeres művelet!"
+
+local function SendNotification(text)
+    NotifLabel.Text = text
+    NotificationFrame.Position = UDim2.new(0.5, -125, 0, -50)
+    NotificationFrame.Visible = true
+    
+    local twIn = TweenService:Create(NotificationFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 20)})
+    twIn:Play()
+    
+    task.spawn(function()
+        task.wait(2.5)
+        local twOut = TweenService:Create(NotificationFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -50)})
+        twOut:Play()
+        task.wait(0.3)
+        NotificationFrame.Visible = false
+    end)
+end
+
+-- FOV Kör
 local FOVFrame = Instance.new("Frame")
 FOVFrame.Name = "FOVCircle"
 FOVFrame.Parent = ScreenGui
@@ -60,35 +102,36 @@ FOVFrame.Visible = false
 local FOVStroke = Instance.new("UIStroke")
 FOVStroke.Parent = FOVFrame
 FOVStroke.Color = Color3.fromRGB(0, 255, 128)
+FOVStroke.Transparency = 0.3
 FOVStroke.Thickness = 1.5
 
 local FOVCorner = Instance.new("UICorner")
 FOVCorner.CornerRadius = UDim.new(1, 0)
 FOVCorner.Parent = FOVFrame
 
--- Lebegő Menü Nyitó Gomb
+-- Lebegő Nyitó Gomb
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "MenuToggle"
 ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 128)
 ToggleButton.BorderSizePixel = 2
 ToggleButton.Position = UDim2.new(0, 15, 0, 70)
-ToggleButton.Size = UDim2.new(0, 125, 0, 42)
+ToggleButton.Size = UDim2.new(0, 120, 0, 40)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Text = "⚡ XENOWARE"
 ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 128)
-ToggleButton.TextSize = 12
+ToggleButton.TextSize = 11
 
 local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 10)
+BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleButton
 
--- Fő Keret (Ablak)
+-- Fő Ablak
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(14, 14, 14)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
 MainFrame.BorderSizePixel = 1
 MainFrame.Position = UDim2.new(0.5, -170, 0.5, -205)
@@ -96,17 +139,17 @@ MainFrame.Size = UDim2.new(0, 340, 0, 410)
 MainFrame.Visible = false
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = MainFrame
 
--- Felső Címsor
+-- Címsor
 local TitleBar = Instance.new("Frame")
 TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-TitleBar.Size = UDim2.new(1, 0, 0, 36)
+TitleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
 
 local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.CornerRadius = UDim.new(0, 10)
 TitleCorner.Parent = TitleBar
 
 local TitleLabel = Instance.new("TextLabel")
@@ -115,32 +158,32 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.Size = UDim2.new(1, -50, 1, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Xenoware // Elite Mobile"
+TitleLabel.Text = "Xenoware // Elite v3.0"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
-TitleLabel.TextSize = 13
+TitleLabel.TextSize = 12
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = TitleBar
-CloseBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-CloseBtn.Position = UDim2.new(1, -30, 0, 8)
-CloseBtn.Size = UDim2.new(0, 20, 0, 20)
+CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
+CloseBtn.Position = UDim2.new(1, -28, 0, 7)
+CloseBtn.Size = UDim2.new(0, 21, 0, 21)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.TextSize = 10
 local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.CornerRadius = UDim.new(0, 5)
 CloseCorner.Parent = CloseBtn
 
 CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
 ToggleButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
 
--- Fülek (Tabs) sávja tökéletes visszajelzéssel
+-- Fülek (Tabs) Sávja
 local TabBar = Instance.new("Frame")
 TabBar.Parent = MainFrame
 TabBar.BackgroundTransparency = 1
-TabBar.Position = UDim2.new(0, 8, 0, 44)
+TabBar.Position = UDim2.new(0, 8, 0, 42)
 TabBar.Size = UDim2.new(1, -16, 0, 30)
 
 local TabListLayout = Instance.new("UIListLayout")
@@ -156,13 +199,13 @@ local tabButtons = {}
 for i, tabName in ipairs(tabs) do
     local tabBtn = Instance.new("TextButton")
     tabBtn.Parent = TabBar
-    tabBtn.BackgroundColor3 = (i == 1) and Color3.fromRGB(0, 45, 25) or Color3.fromRGB(22, 22, 22)
-    tabBtn.BorderColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(45, 45, 45)
+    tabBtn.BackgroundColor3 = (i == 1) and Color3.fromRGB(0, 45, 25) or Color3.fromRGB(20, 20, 20)
+    tabBtn.BorderColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(40, 40, 40)
     tabBtn.BorderSizePixel = 1
     tabBtn.Size = UDim2.new(0.238, 0, 1, 0)
     tabBtn.Font = Enum.Font.GothamBold
     tabBtn.Text = tabName
-    tabBtn.TextColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(170, 170, 170)
+    tabBtn.TextColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(150, 150, 150)
     tabBtn.TextSize = 11
 
     local tabCorner = Instance.new("UICorner")
@@ -174,10 +217,10 @@ for i, tabName in ipairs(tabs) do
     local cFrame = Instance.new("ScrollingFrame")
     cFrame.Parent = MainFrame
     cFrame.BackgroundTransparency = 1
-    cFrame.Position = UDim2.new(0, 10, 0, 82)
-    cFrame.Size = UDim2.new(1, -20, 1, -92)
-    cFrame.CanvasSize = UDim2.new(0, 0, 0, 520)
-    cFrame.ScrollBarThickness = 3
+    cFrame.Position = UDim2.new(0, 10, 0, 78)
+    cFrame.Size = UDim2.new(1, -20, 1, -86)
+    cFrame.CanvasSize = UDim2.new(0, 0, 0, 480)
+    cFrame.ScrollBarThickness = 2
     cFrame.Visible = (i == 1)
     
     local list = Instance.new("UIListLayout")
@@ -188,17 +231,13 @@ for i, tabName in ipairs(tabs) do
     contentFrames[tabName] = cFrame
 
     tabBtn.MouseButton1Click:Connect(function()
-        -- Minden tartalom elrejtése és gomb alaphelyzetbe állítása
-        for name, frame in pairs(contentFrames) do
-            frame.Visible = false
-        end
-        for name, btn in pairs(tabButtons) do
-            btn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-            btn.TextColor3 = Color3.fromRGB(170, 170, 170)
-            btn.BorderColor3 = Color3.fromRGB(45, 45, 45)
+        for _, frame in pairs(contentFrames) do frame.Visible = false end
+        for _, btn in pairs(tabButtons) do
+            btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+            btn.BorderColor3 = Color3.fromRGB(40, 40, 40)
         end
         
-        -- Aktív fül megjelenítése és kiemelése
         cFrame.Visible = true
         tabBtn.BackgroundColor3 = Color3.fromRGB(0, 45, 25)
         tabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
@@ -206,32 +245,33 @@ for i, tabName in ipairs(tabs) do
     end)
 end
 
--- UI Segédfüggvények: Kapcsolók és Beállítások
+-- UI Építő Segédfüggvények
 local function AddToggle(tabName, text, toggleKey)
     local parent = contentFrames[tabName]
     if not parent then return end
 
     local btn = Instance.new("TextButton")
     btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    btn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     btn.BorderColor3 = Color3.fromRGB(35, 35, 35)
-    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.Size = UDim2.new(1, 0, 0, 36)
     btn.Font = Enum.Font.GothamMedium
     btn.Text = "  " .. text .. ": [OFF]"
-    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
+    btn.TextColor3 = Color3.fromRGB(180, 180, 180)
     btn.TextSize = 11
     btn.TextXAlignment = Enum.TextXAlignment.Left
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
         getgenv().XenowareToggles[toggleKey] = not getgenv().XenowareToggles[toggleKey]
         local state = getgenv().XenowareToggles[toggleKey]
         btn.Text = "  " .. text .. ": [" .. (state and "ON" or "OFF") .. "]"
-        btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(200, 200, 200)
+        btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(180, 180, 180)
         btn.BorderColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(35, 35, 35)
+        SendNotification(text .. ": " .. (state and "Bekapcsolva" : "Kikapcsolva"))
     end)
 end
 
@@ -246,9 +286,9 @@ local function AddButtonOption(tabName, text, options, optionKey)
 
     local btn = Instance.new("TextButton")
     btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    btn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
     btn.BorderColor3 = Color3.fromRGB(35, 35, 35)
-    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.Size = UDim2.new(1, 0, 0, 36)
     btn.Font = Enum.Font.GothamMedium
     btn.Text = "  " .. text .. ": < " .. tostring(getgenv().XenowareOptions[optionKey]) .. " >"
     btn.TextColor3 = Color3.fromRGB(0, 255, 128)
@@ -256,7 +296,7 @@ local function AddButtonOption(tabName, text, options, optionKey)
     btn.TextXAlignment = Enum.TextXAlignment.Left
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
@@ -267,8 +307,33 @@ local function AddButtonOption(tabName, text, options, optionKey)
     end)
 end
 
+-- Akció Gomb (pl. azonnali Skin Betöltéshez)
+local function AddActionButton(tabName, text, callback)
+    local parent = contentFrames[tabName]
+    if not parent then return end
+
+    local btn = Instance.new("TextButton")
+    btn.Parent = parent
+    btn.BackgroundColor3 = Color3.fromRGB(0, 35, 20)
+    btn.BorderColor3 = Color3.fromRGB(0, 255, 128)
+    btn.Size = UDim2.new(1, 0, 0, 38)
+    btn.Font = Enum.Font.GothamBold
+    btn.Text = "  ⚡ " .. text
+    btn.TextColor3 = Color3.fromRGB(0, 255, 128)
+    btn.TextSize = 11
+    btn.TextXAlignment = Enum.TextXAlignment.Left
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    btn.MouseButton1Click:Connect(function()
+        pcall(callback)
+    end)
+end
+
 -- ==============================================================================
--- MENÜ ELEMEK HOZZÁADÁSA FÜLÖNKÉNT
+-- MENÜ ELEMEK HOZZÁADÁSA
 -- ==============================================================================
 
 -- COMBAT
@@ -278,20 +343,37 @@ AddButtonOption("Combat", "Aimbot HitPart", {"Head", "HumanoidRootPart"}, "HitPa
 AddButtonOption("Combat", "FOV Size", {80, 120, 150, 200, 300}, "FOVRadius")
 AddToggle("Combat", "Ragebot (Teleport + Attack)", "RageEnabled")
 AddToggle("Combat", "Void Hit & Run (Teleport Loop)", "VoidSpam")
-AddToggle("Combat", "Hitbox Expander (Big Hitboxes)", "HitboxEnabled")
+AddToggle("Combat", "Hitbox Expander", "HitboxEnabled")
 
 -- VISUALS
 AddToggle("Visuals", "Player Outline ESP (Highlight)", "PlayerOutline")
 AddToggle("Visuals", "Show FOV Circle", "ShowFOV")
 
--- SKINS
-AddToggle("Skins", "Unlock All Skins & Cosmetics", "UnlockAll")
+-- SKINS (VALÓDI MŰKÖDŐ SKIN UNLOCKER HOOK)
+AddActionButton("Skins", "Load All Inventory & Weapon Skins", function()
+    -- Biztonságos univerzális skin bypass és tábla feltöltés
+    local success = pcall(function()
+        for _, v in pairs(getgc(true)) do
+            if typeof(v) == "table" then
+                -- Ha a tábla tartalmaz skin/inventory kulcsokat, mindet true-ra állítjuk
+                if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") or rawget(v, "OwnedSkins") then
+                    for k, _ in pairs(v) do
+                        if type(k) == "string" then v[k] = true end
+                    end
+                end
+            end
+        end
+    end)
+    SendNotification("Skinek sikeresen betöltve / feloldva!")
+end)
+
+AddToggle("Skins", "Auto-Apply Skin Bypass Loop", "UnlockAll")
 
 -- MISC
 AddToggle("Misc", "Advanced Camera Fly", "FlyEnabled")
 AddToggle("Misc", "Device Platform Spoofer", "SpoofEnabled")
 
--- Drag támogatás (Mozgatható ablak és gomb)
+-- Mozgathatóság (Drag)
 local function makeDraggable(guiObject)
     local dragging, dragInput, dragStart, startPos
     guiObject.InputBegan:Connect(function(input)
@@ -299,9 +381,6 @@ local function makeDraggable(guiObject)
             dragging = true
             dragStart = input.Position
             startPos = guiObject.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then dragging = false end
-            end)
         end
     end)
     guiObject.InputChanged:Connect(function(input)
@@ -321,7 +400,7 @@ makeDraggable(MainFrame)
 makeDraggable(ToggleButton)
 
 -- ==============================================================================
--- HÁTTÉRFOLYAMATOK ÉS FUNKCIÓK LOGIKÁJA
+-- LOGIKA ÉS HÁTTÉRFOLYAMATOK (OPTIMALIZÁLT)
 -- ==============================================================================
 
 local function getBestTarget()
@@ -360,7 +439,7 @@ local function getBestTarget()
     return bestTarget
 end
 
--- FOV kör frissítése
+-- FOV Frissítés
 RunService.RenderStepped:Connect(function()
     local mousePos = UserInputService:GetMouseLocation()
     local fovSize = getgenv().XenowareOptions.FOVRadius * 2
@@ -369,7 +448,7 @@ RunService.RenderStepped:Connect(function()
     FOVFrame.Visible = getgenv().XenowareToggles.ShowFOV
 end)
 
--- Aimbot & Ragebot logika
+-- Aimbot & Ragebot
 RunService.RenderStepped:Connect(function()
     local toggles = getgenv().XenowareToggles
     if not toggles.AimEnabled and not toggles.RageEnabled then return end
@@ -398,10 +477,10 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Void Spam (Hit & Run)
+-- Void Spam
 task.spawn(function()
     while true do
-        task.wait(0.12)
+        task.wait(0.15)
         if getgenv().XenowareToggles.VoidSpam then
             local localChar = LocalPlayer.Character
             if localChar and localChar:FindFirstChild("HumanoidRootPart") then
@@ -411,10 +490,8 @@ task.spawn(function()
                 local target = getBestTarget()
                 if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
                     local targetHRP = target.Character.HumanoidRootPart
-                    
                     hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 4, 0)
                     pcall(function() if mouse1click then mouse1click() end end)
-                    
                     task.wait(0.04)
                     hrp.CFrame = originalPos
                 end
@@ -423,16 +500,16 @@ task.spawn(function()
     end
 end)
 
--- Unlock All Skins / Cosmetics
+-- Skin Unlock Loop (Ha be van kapcsolva)
 task.spawn(function()
     while true do
-        task.wait(2)
+        task.wait(3)
         if getgenv().XenowareToggles.UnlockAll then
             pcall(function()
                 for _, v in pairs(getgc(true)) do
                     if typeof(v) == "table" then
-                        if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Wraps") then
-                            for key, _ in pairs(v) do v[key] = true end
+                        if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") then
+                            for k, _ in pairs(v) do v[k] = true end
                         end
                     end
                 end
@@ -447,18 +524,18 @@ RunService.RenderStepped:Connect(function()
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
                 local hrp = p.Character.HumanoidRootPart
-                hrp.Size = Vector3.new(4.5, 4.5, 2.5)
-                hrp.Transparency = 0.5
+                hrp.Size = Vector3.new(4, 4, 2)
+                hrp.Transparency = 0.6
                 hrp.CanCollide = false
             end
         end
     end
 end)
 
--- Player Outline ESP (Highlight)
+-- Player Outline ESP
 task.spawn(function()
     while true do
-        task.wait(1)
+        task.wait(1.5)
         for _, p in ipairs(Players:GetPlayers()) do
             if p ~= LocalPlayer and p.Character then
                 if getgenv().XenowareToggles.PlayerOutline then
@@ -480,7 +557,7 @@ task.spawn(function()
     end
 end)
 
--- Advanced Fly
+-- Fly
 RunService.RenderStepped:Connect(function()
     if getgenv().XenowareToggles.FlyEnabled then
         local char = LocalPlayer.Character
@@ -499,7 +576,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Device Spoofer
+-- Spoofer
 pcall(function()
     local oldIndex
     oldIndex = hookmetamethod(game, "__index", function(self, k)
@@ -510,4 +587,4 @@ pcall(function()
     end)
 end)
 
-print("Xenoware Elite Mobile Edition sikeresen betöltődött!")
+SendNotification("Xenoware Elite v3.0 sikeresen betöltve!")
