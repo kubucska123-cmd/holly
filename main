@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Xenoware // Ultimate Mobile Edition [Custom Compact UI, Keyless]
+-- Xenoware // Ultimate Mobile Fixed Edition [Single-Column, Compact, Keyless]
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -10,7 +10,7 @@ local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 local CoreGui = game:GetService("CoreGui")
 
--- Globális beállítások táblája a mobil UI-hoz
+-- Globális beállítások
 getgenv().XenowareToggles = {
     AimEnabled = false,
     RageEnabled = false,
@@ -34,17 +34,10 @@ getgenv().XenowareOptions = {
     Distance = 800,
     FOVRadius = 150,
     HitPart = "Head",
-    AimSmooth = 1,
-    SilentDist = 1000,
-    SilentHitPart = "Head",
-    HitboxSize = 2.0,
-    HitboxTrans = 0.6,
     FlySpeed = 60,
-    SpoofPlatform = "Computer",
-    VRScale = 1,
 }
 
--- Előző GUI eltávolítása ha létezik
+-- Előző GUI eltávolítása
 pcall(function()
     if CoreGui:FindFirstChild("XenowareMobileUI") then
         CoreGui.XenowareMobileUI:Destroy()
@@ -52,63 +45,63 @@ pcall(function()
 end)
 
 -- ==============================================================================
--- EGYEDI MOBIL UI LÉTREHOZÁSA (Kompakt, nem bugos, reszponzív)
+-- MOBIL-BARÁT, EGYOSZLOPOS UI LÉTREHOZÁSA
 -- ==============================================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenowareMobileUI"
 ScreenGui.Parent = CoreGui
 ScreenGui.ResetOnSpawn = false
 
--- Lebegő Nyitó/Záró Gomb (Mobilra)
+-- Lebegő Nyitó/Záró Gomb
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "MenuToggle"
 ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 128)
 ToggleButton.BorderSizePixel = 2
-ToggleButton.Position = UDim2.new(0, 15, 0, 80)
-ToggleButton.Size = UDim2.new(0, 100, 0, 38)
+ToggleButton.Position = UDim2.new(0, 15, 0, 70)
+ToggleButton.Size = UDim2.new(0, 110, 0, 40)
 ToggleButton.Font = Enum.Font.GothamBold
 ToggleButton.Text = "XENOWARE"
 ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 128)
 ToggleButton.TextSize = 13
 
 local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 6)
+BtnCorner.CornerRadius = UDim.new(0, 8)
 BtnCorner.Parent = ToggleButton
 
--- Fő Ablak (Kompakt méret telefonokra: 360x260)
+-- Fő Ablak (Keskeny, mobilos méret: 310x380, hogy elférjen mindenhol)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
 MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
 MainFrame.BorderSizePixel = 1
-MainFrame.Position = UDim2.new(0.5, -180, 0.5, -130)
-MainFrame.Size = UDim2.new(0, 360, 0, 260)
+MainFrame.Position = UDim2.new(0.5, -155, 0.5, -190)
+MainFrame.Size = UDim2.new(0, 310, 0, 380)
 MainFrame.Visible = false
 
 local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.CornerRadius = UDim.new(0, 10)
 MainCorner.Parent = MainFrame
 
 -- Címsor
 local TitleBar = Instance.new("Frame")
 TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
-TitleBar.Size = UDim2.new(1, 0, 0, 30)
+TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TitleBar.Size = UDim2.new(1, 0, 0, 32)
 
 local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 8)
+TitleCorner.CornerRadius = UDim.new(0, 10)
 TitleCorner.Parent = TitleBar
 
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Parent = TitleBar
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 10, 0, 0)
-TitleLabel.Size = UDim2.new(1, -40, 1, 0)
+TitleLabel.Size = UDim2.new(1, -45, 1, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Xenoware // Mobile Compact Edition"
+TitleLabel.Text = "Xenoware // Mobile Fixed"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
 TitleLabel.TextSize = 12
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -116,14 +109,14 @@ TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Parent = TitleBar
 CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-CloseBtn.Position = UDim2.new(1, -26, 0, 5)
+CloseBtn.Position = UDim2.new(1, -26, 0, 6)
 CloseBtn.Size = UDim2.new(0, 20, 0, 20)
 CloseBtn.Font = Enum.Font.GothamBold
 CloseBtn.Text = "X"
 CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseBtn.TextSize = 10
 local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 4)
+CloseCorner.CornerRadius = UDim.new(0, 5)
 CloseCorner.Parent = CloseBtn
 
 CloseBtn.MouseButton1Click:Connect(function()
@@ -134,17 +127,18 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
--- Fülek tartója (Tab Sáv)
+-- Fülek sávja
 local TabBar = Instance.new("Frame")
 TabBar.Parent = MainFrame
-TabBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-TabBar.Position = UDim2.new(0, 0, 0, 32)
-TabBar.Size = UDim2.new(1, 0, 0, 28)
+TabBar.BackgroundTransparency = 1
+TabBar.Position = UDim2.new(0, 5, 0, 38)
+TabBar.Size = UDim2.new(1, -10, 0, 28)
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Parent = TabBar
-UIListLayout.FillDirection = Enum.FillDirection.Horizontal
-UIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+local TabListLayout = Instance.new("UIListLayout")
+TabListLayout.Parent = TabBar
+TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabListLayout.Padding = UDim.new(0, 4)
 
 local tabs = {"Combat", "Visuals", "Skins", "Misc"}
 local contentFrames = {}
@@ -152,27 +146,32 @@ local contentFrames = {}
 for i, tabName in ipairs(tabs) do
     local tabBtn = Instance.new("TextButton")
     tabBtn.Parent = TabBar
-    tabBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    tabBtn.BorderColor3 = Color3.fromRGB(40, 40, 40)
-    tabBtn.Size = UDim2.new(0.25, 0, 1, 0)
+    tabBtn.BackgroundColor3 = Color3.fromRGB(22, 22, 22)
+    tabBtn.BorderColor3 = Color3.fromRGB(45, 45, 45)
+    tabBtn.Size = UDim2.new(0.235, 0, 1, 0)
     tabBtn.Font = Enum.Font.GothamBold
     tabBtn.Text = tabName
-    tabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    tabBtn.TextSize = 11
+    tabBtn.TextColor3 = Color3.fromRGB(180, 180, 180)
+    tabBtn.TextSize = 10
 
+    local tabCorner = Instance.new("UICorner")
+    tabCorner.CornerRadius = UDim.new(0, 5)
+    tabCorner.Parent = tabBtn
+
+    -- Görgethető tartalom ablak minden fülhöz
     local cFrame = Instance.new("ScrollingFrame")
     cFrame.Parent = MainFrame
     cFrame.BackgroundTransparency = 1
-    cFrame.Position = UDim2.new(0, 5, 0, 65)
-    cFrame.Size = UDim2.new(1, -10, 1, -70)
-    cFrame.CanvasSize = UDim2.new(0, 0, 0, 350)
-    cFrame.ScrollBarThickness = 4
+    cFrame.Position = UDim2.new(0, 8, 0, 72)
+    cFrame.Size = UDim2.new(1, -16, 1, -80)
+    cFrame.CanvasSize = UDim2.new(0, 0, 0, 450)
+    cFrame.ScrollBarThickness = 3
     cFrame.Visible = (i == 1)
     
     local list = Instance.new("UIListLayout")
     list.Parent = cFrame
     list.SortOrder = Enum.SortOrder.LayoutOrder
-    list.Padding = UDim.new(0, 5)
+    list.Padding = UDim.new(0, 6)
 
     contentFrames[tabName] = cFrame
 
@@ -182,52 +181,53 @@ for i, tabName in ipairs(tabs) do
     end)
 end
 
--- Egyszerű Mobil UIElem Készítők (Toggle-ök a gyors beállításhoz)
-local function AddToggleToTab(tabName, text, toggleKey)
+-- Egységes, nagy méretű, jól megnyomható mobil kapcsolók készítése
+local function AddToggle(tabName, text, toggleKey)
     local parent = contentFrames[tabName]
     if not parent then return end
 
     local btn = Instance.new("TextButton")
     btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-    btn.BorderColor3 = Color3.fromRGB(0, 255, 128)
-    btn.Size = UDim2.new(1, 0, 0, 30)
-    btn.Font = Enum.Font.Gotham
+    btn.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    btn.BorderColor3 = Color3.fromRGB(40, 40, 40)
+    btn.Size = UDim2.new(1, 0, 0, 36)
+    btn.Font = Enum.Font.GothamMedium
     btn.Text = "  " .. text .. ": [OFF]"
-    btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    btn.TextColor3 = Color3.fromRGB(200, 200, 200)
     btn.TextSize = 11
     btn.TextXAlignment = Enum.TextXAlignment.Left
 
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 5)
+    corner.CornerRadius = UDim.new(0, 6)
     corner.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
         getgenv().XenowareToggles[toggleKey] = not getgenv().XenowareToggles[toggleKey]
         local state = getgenv().XenowareToggles[toggleKey]
-        btn.Text = "  " .. text .. ": [" .. (state and "ON" or "OFF") .. "]"
-        btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(220, 220, 220)
+        btn.Text = "  " .. text .. ": [" .. (state && "ON" or "OFF") .. "]"
+        btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(200, 200, 200)
+        btn.BorderColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(40, 40, 40)
     end)
 end
 
--- Funkciók hozzáadása a mobilos fülekhez
-AddToggleToTab("Combat", "Aimbot Camera Lock", "AimEnabled")
-AddToggleToTab("Combat", "Ragebot (Above Hover + Shoot)", "RageEnabled")
-AddToggleToTab("Combat", "Void Hit & Run (Teleport Loop)", "VoidSpam")
-AddToggleToTab("Combat", "Silent Aim", "SilentEnabled")
-AddToggleToTab("Combat", "Triggerbot", "TriggerEnabled")
-AddToggleToTab("Combat", "Hitbox Expander", "HitboxEnabled")
+-- Funkciók hozzáadása fülekként
+AddToggle("Combat", "Aimbot Camera Lock", "AimEnabled")
+AddToggle("Combat", "Ragebot (Above Hover + Shoot)", "RageEnabled")
+AddToggle("Combat", "Void Hit & Run (Teleport Loop)", "VoidSpam")
+AddToggle("Combat", "Silent Aim", "SilentEnabled")
+AddToggle("Combat", "Triggerbot", "TriggerEnabled")
+AddToggle("Combat", "Hitbox Expander", "HitboxEnabled")
 
-AddToggleToTab("Visuals", "Player Outline ESP", "PlayerOutline")
-AddToggleToTab("Visuals", "Show FOV Circle", "ShowFOV")
+AddToggle("Visuals", "Player Outline ESP", "PlayerOutline")
+AddToggle("Visuals", "Show FOV Circle", "ShowFOV")
 
-AddToggleToTab("Skins", "Unlock All Skins & Cosmetics", "UnlockAll")
+AddToggle("Skins", "Unlock All Skins & Cosmetics", "UnlockAll")
 
-AddToggleToTab("Misc", "Advanced Fly", "FlyEnabled")
-AddToggleToTab("Misc", "Device Spoofer (Platform)", "SpoofEnabled")
-AddToggleToTab("Misc", "VR Mode / Sim", "VREnabled")
+AddToggle("Misc", "Advanced Fly", "FlyEnabled")
+AddToggle("Misc", "Device Spoofer (Platform)", "SpoofEnabled")
+AddToggle("Misc", "VR Mode / Sim", "VREnabled")
 
--- Gomb mozgatás mobilon (Drag support a főablakhoz és a nyitógombhoz is)
+-- Drag támogatás mobilon
 local function makeDraggable(guiObject)
     local dragging, dragInput, dragStart, startPos
     guiObject.InputBegan:Connect(function(input)
@@ -257,7 +257,7 @@ makeDraggable(MainFrame)
 makeDraggable(ToggleButton)
 
 -- ==============================================================================
--- HÁTTÉRFOLYAMATOK ÉS FUNKCIÓK LOGIKÁJA
+-- HÁTTÉRFOLYAMATOK ÉS LOGIKA
 -- ==============================================================================
 
 local FOVCircle = Drawing.new("Circle")
@@ -322,7 +322,6 @@ RunService.RenderStepped:Connect(function()
         if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local localHRP = LocalPlayer.Character.HumanoidRootPart
             
-            -- Ragebot / Fölötte lebegés
             if toggles.RageEnabled and not toggles.VoidSpam then
                 local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
                 if targetHRP then
@@ -331,7 +330,6 @@ RunService.RenderStepped:Connect(function()
                 end
             end
             
-            -- Tiszta Aimbot
             if toggles.AimEnabled and not toggles.RageEnabled and not toggles.VoidSpam then
                 Camera.CFrame = Camera.CFrame:Lerp(CFrame.new(Camera.CFrame.Position, part.Position), 0.3)
             end
@@ -339,7 +337,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Void Hit & Run (Void Spam): Fel a fejre -> Lő -> Vissza
+-- Void Hit & Run Logika
 task.spawn(function()
     while true do
         task.wait(0.15)
@@ -421,7 +419,7 @@ task.spawn(function()
     end
 end)
 
--- Fly Logika
+-- Fly
 RunService.RenderStepped:Connect(function()
     if getgenv().XenowareToggles.FlyEnabled then
         local char = LocalPlayer.Character
@@ -440,7 +438,7 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Device Spoofer Hook
+-- Device Spoofer
 pcall(function()
     local oldIndex
     oldIndex = hookmetamethod(game, "__index", function(self, k)
@@ -451,4 +449,4 @@ pcall(function()
     end)
 end)
 
-print("Xenoware Mobile Compact Edition sikeresen betöltődött!")
+print("Xenoware Mobile Fixed Edition betöltődött!")
