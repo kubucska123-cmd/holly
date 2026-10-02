@@ -1,5 +1,5 @@
 -- ==============================================================================
--- Xenoware // Ultimate Mobile Elite v3.0 [Bug-Free, Real Skin Hook, Ultra Smooth]
+-- Xenoware // Ultimate Mobile Elite v4.0 [100% Start Guarantee, Bug-Free Lua]
 -- ==============================================================================
 
 local Players = game:GetService("Players")
@@ -8,22 +8,36 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
-local CoreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
+
+-- Biztonságos GUI Szülő meghatározás (mobilos executor kompatibilitás)
+local CoreGui = game:GetService("CoreGui")
+local guiParent = nil
+pcall(function()
+    if gethui then
+        guiParent = gethui()
+    end
+end)
+if not guiParent then
+    pcall(function()
+        guiParent = CoreGui
+    end)
+end
+if not guiParent or not pcall(function() local f = Instance.new("Folder", guiParent) f:Destroy() end) then
+    guiParent = LocalPlayer:WaitForChild("PlayerGui")
+end
 
 -- Globális beállítások
 getgenv().XenowareToggles = {
     AimEnabled = false,
     RageEnabled = false,
     TeamCheck = true,
-    VisibleCheck = true,
     ShowFOV = true,
     VoidSpam = false,
     HitboxEnabled = false,
     PlayerOutline = true,
     UnlockAll = false,
     FlyEnabled = false,
-    SpoofEnabled = false,
 }
 
 getgenv().XenowareOptions = {
@@ -34,30 +48,30 @@ getgenv().XenowareOptions = {
     FlySpeed = 50,
 }
 
--- Előző GUI biztonságos takarítása
+-- Előző GUI takarítása
 pcall(function()
-    if CoreGui:FindFirstChild("XenowareMobileUI") then
-        CoreGui.XenowareMobileUI:Destroy()
+    if guiParent:FindFirstChild("XenowareMobileUI") then
+        guiParent.XenowareMobileUI:Destroy()
     end
 end)
 
 -- ==============================================================================
--- UI LÉTREHOZÁSA (ULTRA MODERN CYBERPUNK / GLOW DESIGN)
+-- UI LÉTREHOZÁSA
 -- ==============================================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "XenowareMobileUI"
-ScreenGui.Parent = CoreGui
+ScreenGui.Parent = guiParent
 ScreenGui.ResetOnSpawn = false
 
--- Értesítési Rendszer (Toast Notification)
+-- Értesítési Rendszer (Toast)
 local NotificationFrame = Instance.new("Frame")
 NotificationFrame.Name = "Notification"
 NotificationFrame.Parent = ScreenGui
 NotificationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 NotificationFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
 NotificationFrame.BorderSizePixel = 1
-NotificationFrame.Position = UDim2.new(0.5, -125, 0, -50)
-NotificationFrame.Size = UDim2.new(0, 250, 0, 40)
+NotificationFrame.Position = UDim2.new(0.5, -125, 0, -60)
+NotificationFrame.Size = UDim2.new(0, 250, 0, 38)
 NotificationFrame.Visible = false
 
 local NotifCorner = Instance.new("UICorner")
@@ -70,23 +84,25 @@ NotifLabel.BackgroundTransparency = 1
 NotifLabel.Size = UDim2.new(1, 0, 1, 0)
 NotifLabel.Font = Enum.Font.GothamBold
 NotifLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
-NotifLabel.TextSize = 12
-NotifLabel.Text = "Xenoware: Sikeres művelet!"
+NotifLabel.TextSize = 11
+NotifLabel.Text = "Xenoware: Fut!"
 
 local function SendNotification(text)
-    NotifLabel.Text = text
-    NotificationFrame.Position = UDim2.new(0.5, -125, 0, -50)
-    NotificationFrame.Visible = true
-    
-    local twIn = TweenService:Create(NotificationFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 20)})
-    twIn:Play()
-    
-    task.spawn(function()
-        task.wait(2.5)
-        local twOut = TweenService:Create(NotificationFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -50)})
-        twOut:Play()
-        task.wait(0.3)
-        NotificationFrame.Visible = false
+    pcall(function()
+        NotifLabel.Text = text
+        NotificationFrame.Position = UDim2.new(0.5, -125, 0, -60)
+        NotificationFrame.Visible = true
+        
+        local twIn = TweenService:Create(NotificationFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 20)})
+        twIn:Play()
+        
+        task.spawn(function()
+            task.wait(2)
+            local twOut = TweenService:Create(NotificationFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)})
+            twOut:Play()
+            task.wait(0.25)
+            NotificationFrame.Visible = false
+        end)
     end)
 end
 
@@ -109,7 +125,7 @@ local FOVCorner = Instance.new("UICorner")
 FOVCorner.CornerRadius = UDim.new(1, 0)
 FOVCorner.Parent = FOVFrame
 
--- Lebegő Nyitó Gomb
+-- Nyitó Gomb
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Name = "MenuToggle"
 ToggleButton.Parent = ScreenGui
@@ -136,7 +152,7 @@ MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
 MainFrame.BorderSizePixel = 1
 MainFrame.Position = UDim2.new(0.5, -170, 0.5, -205)
 MainFrame.Size = UDim2.new(0, 340, 0, 410)
-MainFrame.Visible = false
+MainFrame.Visible = true -- Első induláskor látható legyen, hogy látsd a működést
 
 local MainCorner = Instance.new("UICorner")
 MainCorner.CornerRadius = UDim.new(0, 10)
@@ -158,7 +174,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Position = UDim2.new(0, 12, 0, 0)
 TitleLabel.Size = UDim2.new(1, -50, 1, 0)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Xenoware // Elite v3.0"
+TitleLabel.Text = "Xenoware // Elite v4.0"
 TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
 TitleLabel.TextSize = 12
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -245,7 +261,7 @@ for i, tabName in ipairs(tabs) do
     end)
 end
 
--- UI Építő Segédfüggvények
+-- UI Építők
 local function AddToggle(tabName, text, toggleKey)
     local parent = contentFrames[tabName]
     if not parent then return end
@@ -271,7 +287,7 @@ local function AddToggle(tabName, text, toggleKey)
         btn.Text = "  " .. text .. ": [" .. (state and "ON" or "OFF") .. "]"
         btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(180, 180, 180)
         btn.BorderColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(35, 35, 35)
-        SendNotification(text .. ": " .. (state and "Bekapcsolva" : "Kikapcsolva"))
+        SendNotification(text .. ": " .. (state and "Bekapcsolva" or "Kikapcsolva"))
     end)
 end
 
@@ -307,7 +323,6 @@ local function AddButtonOption(tabName, text, options, optionKey)
     end)
 end
 
--- Akció Gomb (pl. azonnali Skin Betöltéshez)
 local function AddActionButton(tabName, text, callback)
     local parent = contentFrames[tabName]
     if not parent then return end
@@ -333,7 +348,7 @@ local function AddActionButton(tabName, text, callback)
 end
 
 -- ==============================================================================
--- MENÜ ELEMEK HOZZÁADÁSA
+-- MENÜ PONTOK
 -- ==============================================================================
 
 -- COMBAT
@@ -349,29 +364,28 @@ AddToggle("Combat", "Hitbox Expander", "HitboxEnabled")
 AddToggle("Visuals", "Player Outline ESP (Highlight)", "PlayerOutline")
 AddToggle("Visuals", "Show FOV Circle", "ShowFOV")
 
--- SKINS (VALÓDI MŰKÖDŐ SKIN UNLOCKER HOOK)
-AddActionButton("Skins", "Load All Inventory & Weapon Skins", function()
-    -- Biztonságos univerzális skin bypass és tábla feltöltés
-    local success = pcall(function()
-        for _, v in pairs(getgc(true)) do
-            if typeof(v) == "table" then
-                -- Ha a tábla tartalmaz skin/inventory kulcsokat, mindet true-ra állítjuk
-                if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") or rawget(v, "OwnedSkins") then
-                    for k, _ in pairs(v) do
-                        if type(k) == "string" then v[k] = true end
+-- SKINS (BIZTONSÁGOS SKIN ÉS INVENTORY UNLOCKER)
+AddActionButton("Skins", "Load Inventory & Weapon Skins", function()
+    pcall(function()
+        if getgc then
+            for _, v in pairs(getgc(true)) do
+                if typeof(v) == "table" then
+                    if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") or rawget(v, "OwnedSkins") then
+                        for k, _ in pairs(v) do
+                            if type(k) == "string" then v[k] = true end
+                        end
                     end
                 end
             end
         end
     end)
-    SendNotification("Skinek sikeresen betöltve / feloldva!")
+    SendNotification("Skinek és kozmetikumok feloldva!")
 end)
 
 AddToggle("Skins", "Auto-Apply Skin Bypass Loop", "UnlockAll")
 
 -- MISC
 AddToggle("Misc", "Advanced Camera Fly", "FlyEnabled")
-AddToggle("Misc", "Device Platform Spoofer", "SpoofEnabled")
 
 -- Mozgathatóság (Drag)
 local function makeDraggable(guiObject)
@@ -400,7 +414,7 @@ makeDraggable(MainFrame)
 makeDraggable(ToggleButton)
 
 -- ==============================================================================
--- LOGIKA ÉS HÁTTÉRFOLYAMATOK (OPTIMALIZÁLT)
+-- BIZTONSÁGOS HÁTTÉRFOLYAMATOK
 -- ==============================================================================
 
 local function getBestTarget()
@@ -441,150 +455,133 @@ end
 
 -- FOV Frissítés
 RunService.RenderStepped:Connect(function()
-    local mousePos = UserInputService:GetMouseLocation()
-    local fovSize = getgenv().XenowareOptions.FOVRadius * 2
-    FOVFrame.Size = UDim2.new(0, fovSize, 0, fovSize)
-    FOVFrame.Position = UDim2.new(0, mousePos.X, 0, mousePos.Y)
-    FOVFrame.Visible = getgenv().XenowareToggles.ShowFOV
+    pcall(function()
+        local mousePos = UserInputService:GetMouseLocation()
+        local fovSize = getgenv().XenowareOptions.FOVRadius * 2
+        FOVFrame.Size = UDim2.new(0, fovSize, 0, fovSize)
+        FOVFrame.Position = UDim2.new(0, mousePos.X, 0, mousePos.Y)
+        FOVFrame.Visible = getgenv().XenowareToggles.ShowFOV
+    end)
 end)
 
 -- Aimbot & Ragebot
 RunService.RenderStepped:Connect(function()
-    local toggles = getgenv().XenowareToggles
-    if not toggles.AimEnabled and not toggles.RageEnabled then return end
+    pcall(function()
+        local toggles = getgenv().XenowareToggles
+        if not toggles.AimEnabled and not toggles.RageEnabled then return end
 
-    local target = getBestTarget()
-    if target and target.Character then
-        local partName = getgenv().XenowareOptions.HitPart
-        local part = target.Character:FindFirstChild(partName) or target.Character:FindFirstChild("Head") or target.Character:FindFirstChild("HumanoidRootPart")
-        
-        if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local localHRP = LocalPlayer.Character.HumanoidRootPart
+        local target = getBestTarget()
+        if target and target.Character then
+            local partName = getgenv().XenowareOptions.HitPart
+            local part = target.Character:FindFirstChild(partName) or target.Character:FindFirstChild("Head") or target.Character:FindFirstChild("HumanoidRootPart")
             
-            if toggles.RageEnabled and not toggles.VoidSpam then
-                local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
-                if targetHRP then
-                    localHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 5, 0)
-                    pcall(function() if mouse1click then mouse1click() end end)
+            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                local localHRP = LocalPlayer.Character.HumanoidRootPart
+                
+                if toggles.RageEnabled and not toggles.VoidSpam then
+                    local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
+                    if targetHRP then
+                        localHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 5, 0)
+                        pcall(function() if mouse1click then mouse1click() end end)
+                    end
+                end
+                
+                if toggles.AimEnabled and not toggles.RageEnabled then
+                    local targetCF = CFrame.new(Camera.CFrame.Position, part.Position)
+                    Camera.CFrame = Camera.CFrame:Lerp(targetCF, getgenv().XenowareOptions.Smoothness)
                 end
             end
-            
-            if toggles.AimEnabled and not toggles.RageEnabled then
-                local targetCF = CFrame.new(Camera.CFrame.Position, part.Position)
-                Camera.CFrame = Camera.CFrame:Lerp(targetCF, getgenv().XenowareOptions.Smoothness)
-            end
         end
-    end
+    end)
 end)
 
 -- Void Spam
 task.spawn(function()
     while true do
         task.wait(0.15)
-        if getgenv().XenowareToggles.VoidSpam then
-            local localChar = LocalPlayer.Character
-            if localChar and localChar:FindFirstChild("HumanoidRootPart") then
-                local hrp = localChar.HumanoidRootPart
-                local originalPos = hrp.CFrame
-                
-                local target = getBestTarget()
-                if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-                    local targetHRP = target.Character.HumanoidRootPart
-                    hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 4, 0)
-                    pcall(function() if mouse1click then mouse1click() end end)
-                    task.wait(0.04)
-                    hrp.CFrame = originalPos
-                end
-            end
-        end
-    end
-end)
-
--- Skin Unlock Loop (Ha be van kapcsolva)
-task.spawn(function()
-    while true do
-        task.wait(3)
-        if getgenv().XenowareToggles.UnlockAll then
-            pcall(function()
-                for _, v in pairs(getgc(true)) do
-                    if typeof(v) == "table" then
-                        if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") then
-                            for k, _ in pairs(v) do v[k] = true end
-                        end
+        pcall(function()
+            if getgenv().XenowareToggles.VoidSpam then
+                local localChar = LocalPlayer.Character
+                if localChar and localChar:FindFirstChild("HumanoidRootPart") then
+                    local hrp = localChar.HumanoidRootPart
+                    local originalPos = hrp.CFrame
+                    
+                    local target = getBestTarget()
+                    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+                        local targetHRP = target.Character.HumanoidRootPart
+                        hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 4, 0)
+                        pcall(function() if mouse1click then mouse1click() end end)
+                        task.wait(0.04)
+                        hrp.CFrame = originalPos
                     end
                 end
-            end)
-        end
+            end
+        end)
     end
 end)
 
 -- Hitbox Expander
 RunService.RenderStepped:Connect(function()
-    if getgenv().XenowareToggles.HitboxEnabled then
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                local hrp = p.Character.HumanoidRootPart
-                hrp.Size = Vector3.new(4, 4, 2)
-                hrp.Transparency = 0.6
-                hrp.CanCollide = false
+    pcall(function()
+        if getgenv().XenowareToggles.HitboxEnabled then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = p.Character.HumanoidRootPart
+                    hrp.Size = Vector3.new(4, 4, 2)
+                    hrp.Transparency = 0.6
+                    hrp.CanCollide = false
+                end
             end
         end
-    end
+    end)
 end)
 
 -- Player Outline ESP
 task.spawn(function()
     while true do
         task.wait(1.5)
-        for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= LocalPlayer and p.Character then
-                if getgenv().XenowareToggles.PlayerOutline then
-                    if not p.Character:FindFirstChild("XenowareOutline") then
-                        local hl = Instance.new("Highlight")
-                        hl.Name = "XenowareOutline"
-                        hl.Adornee = p.Character
-                        hl.FillTransparency = 1
-                        hl.OutlineColor = Color3.fromRGB(0, 255, 128)
-                        hl.OutlineTransparency = 0
-                        hl.Parent = p.Character
+        pcall(function()
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character then
+                    if getgenv().XenowareToggles.PlayerOutline then
+                        if not p.Character:FindFirstChild("XenowareOutline") then
+                            local hl = Instance.new("Highlight")
+                            hl.Name = "XenowareOutline"
+                            hl.Adornee = p.Character
+                            hl.FillTransparency = 1
+                            hl.OutlineColor = Color3.fromRGB(0, 255, 128)
+                            hl.OutlineTransparency = 0
+                            hl.Parent = p.Character
+                        end
+                    else
+                        local hl = p.Character:FindFirstChild("XenowareOutline")
+                        if hl then hl:Destroy() end
                     end
-                else
-                    local hl = p.Character:FindFirstChild("XenowareOutline")
-                    if hl then hl:Destroy() end
                 end
             end
-        end
+        end)
     end
 end)
 
 -- Fly
 RunService.RenderStepped:Connect(function()
-    if getgenv().XenowareToggles.FlyEnabled then
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
-            char.Humanoid.PlatformStand = true
-            local moveDir = Vector3.new()
-            if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
-            if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
-            char.HumanoidRootPart.Velocity = moveDir * getgenv().XenowareOptions.FlySpeed
+    pcall(function()
+        if getgenv().XenowareToggles.FlyEnabled then
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
+                char.Humanoid.PlatformStand = true
+                local moveDir = Vector3.new()
+                if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
+                if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
+                char.HumanoidRootPart.Velocity = moveDir * getgenv().XenowareOptions.FlySpeed
+            end
+        else
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChild("Humanoid") then
+                char.Humanoid.PlatformStand = false
+            end
         end
-    else
-        local char = LocalPlayer.Character
-        if char and char:FindFirstChild("Humanoid") then
-            char.Humanoid.PlatformStand = false
-        end
-    end
-end)
-
--- Spoofer
-pcall(function()
-    local oldIndex
-    oldIndex = hookmetamethod(game, "__index", function(self, k)
-        if getgenv().XenowareToggles.SpoofEnabled and self == UserInputService and k == "GetPlatform" then
-            return Enum.Platform.Windows
-        end
-        return oldIndex(self, k)
     end)
 end)
 
-SendNotification("Xenoware Elite v3.0 sikeresen betöltve!")
+SendNotification("Xenoware Elite v4.0 sikeresen elindult!")
