@@ -1,5 +1,5 @@
 -- =========================================================
--- ROBLOX (LUAU) SCRIPT - MOBIL MENÜ, VOIDSPAM ÉS RAGEBOT
+-- MOBILE FRIENDLY TAPPERRRR UNNAMED ENCHANTMENTS & RAGEBOT
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -8,190 +8,260 @@ local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
+-- Beállítások / Állapotok
 local menuOpen = false
 local ragebotEnabled = false
-local voidSpamEnabled = false
+local voidspamEnabled = false
+local espEnabled = false
+local espTracers = false
 
--- 1. GUI LÉTREHOZÁSA (HUD & MOBIL MENÜ)
+local espObjects = {}
+
+-- 1. GUI LÉTREHOZÁSA (ResetOnSpawn = false -> meghaláskor nem tűnik el)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "TapperGuiMobile"
+ScreenGui.Name = "TapperrrrGui"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Counter Szöveg (Képernyő közepe felett)
+-- HUD Felirat (Script counter)
 local CounterLabel = Instance.new("TextLabel")
 CounterLabel.Parent = ScreenGui
-CounterLabel.Size = UDim2.new(0, 200, 0, 30)
-CounterLabel.Position = UDim2.new(0.5, -100, 0.25, -15) -- Képernyő közepe felett
-CounterLabel.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+CounterLabel.Size = UDim2.new(0, 180, 0, 26)
+CounterLabel.Position = UDim2.new(0.5, -90, 0.25, 0)
+CounterLabel.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 CounterLabel.BackgroundTransparency = 0.3
 CounterLabel.TextColor3 = Color3.fromRGB(0, 255, 150)
-CounterLabel.Text = "scriptcounter(tapper)"
+CounterLabel.Text = "scriptcounter(tapperrrr)"
 CounterLabel.Font = Enum.Font.SourceSansBold
-CounterLabel.TextSize = 18
+CounterLabel.TextSize = 16
 
--- MOZGATHATÓ MOBIL NYITÓ GOMB
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = UDim2.new(0.1, 0, 0.4, 0)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 150)
-ToggleButton.Text = "MENU"
-ToggleButton.Font = Enum.Font.SourceSansBold
-ToggleButton.TextSize = 16
-ToggleButton.Active = true
-ToggleButton.Draggable = true -- Húzható/mozgatható mobilon és PC-n is
+local corner1 = Instance.new("UICorner")
+corner1.CornerRadius = UDim.new(0, 8)
+corner1.Parent = CounterLabel
 
-local UICornerBtn = Instance.new("UICorner")
-UICornerBtn.CornerRadius = UDim.new(0, 12)
-UICornerBtn.Parent = ToggleButton
+---------------------------------------------------------
+-- 2. MOZGATHATÓ MOBIL NYITÓGOMB (TAPPERRRR)
+---------------------------------------------------------
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Parent = ScreenGui
+ToggleBtn.Size = UDim2.new(0, 90, 0, 45)
+ToggleBtn.Position = UDim2.new(0.05, 0, 0.4, 0)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+ToggleBtn.Text = "tapperrrr"
+ToggleBtn.TextColor3 = Color3.fromRGB(0, 255, 150)
+ToggleBtn.Font = Enum.Font.SourceSansBold
+ToggleBtn.TextSize = 14
+ToggleBtn.Active = true
 
--- Menü Keret
-local MenuFrame = Instance.new("Frame")
-MenuFrame.Parent = ScreenGui
-MenuFrame.Size = UDim2.new(0, 220, 0, 160)
-MenuFrame.Position = UDim2.new(0.5, -110, 0.5, -80)
-MenuFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-MenuFrame.Visible = false
+local cornerBtn = Instance.new("UICorner")
+cornerBtn.CornerRadius = UDim.new(0, 12)
+cornerBtn.Parent = ToggleBtn
 
-local UICornerMenu = Instance.new("UICorner")
-UICornerMenu.CornerRadius = UDim.new(0, 8)
-UICornerMenu.Parent = MenuFrame
+local strokeBtn = Instance.new("UIStroke")
+strokeBtn.Color = Color3.fromRGB(0, 255, 150)
+strokeBtn.Thickness = 2
+strokeBtn.Parent = ToggleBtn
 
-local MenuTitle = Instance.new("TextLabel")
-MenuTitle.Parent = MenuFrame
-MenuTitle.Size = UDim2.new(1, 0, 0, 30)
-MenuTitle.Text = "--- MENÜ ---"
-MenuTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-MenuTitle.BackgroundTransparency = 1
-MenuTitle.Font = Enum.Font.SourceSansBold
-MenuTitle.TextSize = 16
+-- Gomb Dragging Logika (Mobil & PC)
+local dragging, dragInput, dragStart, startPos
 
--- RageBot Gomb
-local RageButton = Instance.new("TextButton")
-RageButton.Parent = MenuFrame
-RageButton.Size = UDim2.new(0.85, 0, 0, 35)
-RageButton.Position = UDim2.new(0.075, 0, 0.25, 0)
-RageButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-RageButton.Text = "RageBot: KI"
-RageButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-RageButton.Font = Enum.Font.SourceSansBold
-RageButton.TextSize = 15
-
-local UICornerRage = Instance.new("UICorner")
-UICornerRage.CornerRadius = UDim.new(0, 6)
-UICornerRage.Parent = RageButton
-
--- VoidSpam Gomb
-local VoidButton = Instance.new("TextButton")
-VoidButton.Parent = MenuFrame
-VoidButton.Size = UDim2.new(0.85, 0, 0, 35)
-VoidButton.Position = UDim2.new(0.075, 0, 0.60, 0)
-VoidButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-VoidButton.Text = "VoidSpam: KI"
-VoidButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-VoidButton.Font = Enum.Font.SourceSansBold
-VoidButton.TextSize = 15
-
-local UICornerVoid = Instance.new("UICorner")
-UICornerVoid.CornerRadius = UDim.new(0, 6)
-UICornerVoid.Parent = VoidButton
-
--- 2. MENÜ KEZELÉSE (MOBIL GOMB ÉS RIGHT SHIFT)
-local function toggleMenu()
-    menuOpen = not menuOpen
-    MenuFrame.Visible = menuOpen
+local function update(input)
+    local delta = input.Position - dragStart
+    ToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
-ToggleButton.MouseButton1Click:Connect(toggleMenu)
+ToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = ToggleBtn.Position
 
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+ToggleBtn.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+
+---------------------------------------------------------
+-- 3. FŐ MENÜ ABLAK (TAPPERRRR MENU)
+---------------------------------------------------------
+local MainFrame = Instance.new("Frame")
+MainFrame.Parent = ScreenGui
+MainFrame.Size = UDim2.new(0, 220, 0, 260)
+MainFrame.Position = UDim2.new(0.5, -110, 0.4, -130)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.Visible = false
+
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 10)
+mainCorner.Parent = MainFrame
+
+local Title = Instance.new("TextLabel")
+Title.Parent = MainFrame
+Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Text = "TAPPERRRR MENU"
+Title.TextColor3 = Color3.fromRGB(0, 255, 150)
+Title.BackgroundTransparency = 1
+Title.Font = Enum.Font.SourceSansBold
+Title.TextSize = 18
+
+-- Gomb készítő segédfüggvény
+local function createMenuButton(name, posY, callback)
+    local btn = Instance.new("TextButton")
+    btn.Parent = MainFrame
+    btn.Size = UDim2.new(0.85, 0, 0, 35)
+    btn.Position = UDim2.new(0.075, 0, 0, posY)
+    btn.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    btn.Text = name .. ": KI"
+    btn.TextColor3 = Color3.fromRGB(255, 80, 80)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 14
+
+    local bCorner = Instance.new("UICorner")
+    bCorner.CornerRadius = UDim.new(0, 6)
+    bCorner.Parent = btn
+
+    local state = false
+    btn.MouseButton1Click:Connect(function()
+        state = not state
+        if state then
+            btn.Text = name .. ": BE"
+            btn.TextColor3 = Color3.fromRGB(80, 255, 80)
+        else
+            btn.Text = name .. ": KI"
+            btn.TextColor3 = Color3.fromRGB(255, 80, 80)
+        end
+        callback(state)
+    end)
+    return btn
+end
+
+-- Menü Gombok
+createMenuButton("RageBot Teleport", 40, function(val) ragebotEnabled = val end)
+createMenuButton("VoidSpam", 85, function(val) voidspamEnabled = val end)
+createMenuButton("Unnamed ESP", 130, function(val) espEnabled = val end)
+createMenuButton("ESP Tracers", 175, function(val) espTracers = val end)
+
+-- Menü Nyitás/Zárás (Gombon való kattintással)
+ToggleBtn.MouseButton1Click:Connect(function()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+end)
+
+-- Right Shift billentyű támogatás PC-seknek
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if not gameProcessed and input.KeyCode == Enum.KeyCode.RightShift then
-        toggleMenu()
+        menuOpen = not menuOpen
+        MainFrame.Visible = menuOpen
     end
 end)
 
--- Gombok kattintásai
-RageButton.MouseButton1Click:Connect(function()
-    ragebotEnabled = not ragebotEnabled
-    if ragebotEnabled then
-        RageButton.Text = "RageBot: BE"
-        RageButton.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
-    else
-        RageButton.Text = "RageBot: KI"
-        RageButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    end
-end)
+---------------------------------------------------------
+-- 4. FUNKCIÓK LOGIKÁJA
+---------------------------------------------------------
 
-VoidButton.MouseButton1Click:Connect(function()
-    voidSpamEnabled = not voidSpamEnabled
-    if voidSpamEnabled then
-        VoidButton.Text = "VoidSpam: BE"
-        VoidButton.BackgroundColor3 = Color3.fromRGB(40, 180, 40)
-    else
-        VoidButton.Text = "VoidSpam: KI"
-        VoidButton.BackgroundColor3 = Color3.fromRGB(180, 40, 40)
-    end
-end)
-
--- 3. LEGKÖZELEBBI ELLENSÉG KERESÉSE
-local function getClosestEnemy()
+-- Legközelebbi ellenfél megkeresése
+local function getClosestTarget()
     local myChar = LocalPlayer.Character
     if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
 
-    local closestPlayer = nil
-    local shortestDistance = math.huge
-
+    local closest, minDist = nil, math.huge
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health > 0 then
-                if not LocalPlayer.Team or player.Team ~= LocalPlayer.Team then
-                    local dist = (myChar.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
-                    if dist < shortestDistance then
-                        shortestDistance = dist
-                        closestPlayer = player
-                    end
+            local hum = player.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                local dist = (myChar.HumanoidRootPart.Position - player.Character.HumanoidRootPart.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    closest = player
                 end
             end
         end
     end
-    return closestPlayer
+    return closest
 end
 
--- 4. RAGEBOT ÉS VOIDSPAM LOOP
+-- Main Heartbeat Loop (RageBot & VoidSpam)
 RunService.Heartbeat:Connect(function()
     local myChar = LocalPlayer.Character
     if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
     local myHRP = myChar.HumanoidRootPart
 
-    -- VOIDSPAM LOGIKA (Gyors le-föl teleportálás a map alá)
-    if voidSpamEnabled then
-        local originalCF = myHRP.CFrame
-        myHRP.CFrame = myHRP.CFrame - Vector3.new(0, 200, 0) -- Teleport a Voidba
+    -- VOID SPAM LOGIKA
+    if voidspamEnabled then
+        local currentCFrame = myHRP.CFrame
+        myHRP.CFrame = currentCFrame - Vector3.new(0, 350, 0)
         task.wait()
-        myHRP.CFrame = originalCF -- Vissza a pályára
+        if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+            myHRP.CFrame = currentCFrame
+        end
     end
 
-    -- RAGEBOT LOGIKA (Teleport az ellenfélre, lövés, vissza)
-    if ragebotEnabled then
-        local target = getClosestEnemy()
+    -- RAGEBOT LOGIKA
+    if ragebotEnabled and not voidspamEnabled then
+        local target = getClosestTarget()
         if target and target.Character and target.Character:FindFirstChild("Head") then
             local targetHead = target.Character.Head
-            local originalCFrame = myHRP.CFrame
-            
-            -- Teleport az ellenfél feje fölé
-            myHRP.CFrame = targetHead.CFrame * CFrame.new(0, 8, 0)
+            local savedCFrame = myHRP.CFrame
+
+            myHRP.CFrame = targetHead.CFrame * CFrame.new(0, 7, 0)
             Camera.CFrame = CFrame.new(Camera.CFrame.Position, targetHead.Position)
-            
-            -- Lövés szimulálás
-            if mouse1click then
-                mouse1click()
+
+            if mouse1click then mouse1click() end
+
+            task.wait(0.03)
+            if myChar and myChar:FindFirstChild("HumanoidRootPart") then
+                myHRP.CFrame = savedCFrame
             end
-            
-            task.wait(0.05)
-            myHRP.CFrame = originalCFrame
+        end
+    end
+end)
+
+---------------------------------------------------------
+-- 5. UNNAMED ESP RENDSZER
+---------------------------------------------------------
+local function applyESP(player)
+    if player == LocalPlayer then return end
+    
+    local Highlight = Instance.new("Highlight")
+    Highlight.Name = "TapperrrrESP"
+    Highlight.FillColor = Color3.fromRGB(255, 0, 0)
+    Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+    Highlight.FillTransparency = 0.5
+    Highlight.OutlineTransparency = 0
+    Highlight.Enabled = false
+
+    local function onCharacterAdded(char)
+        Highlight.Parent = char
+    end
+
+    if player.Character then onCharacterAdded(player.Character) end
+    player.CharacterAdded:Connect(onCharacterAdded)
+
+    espObjects[player] = Highlight
+end
+
+for _, p in pairs(Players:GetPlayers()) do applyESP(p) end
+Players.PlayerAdded:Connect(applyESP)
+
+RunService.RenderStepped:Connect(function()
+    for player, highlight in pairs(espObjects) do
+        if highlight and player.Character then
+            highlight.Enabled = espEnabled
         end
     end
 end)
