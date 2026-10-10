@@ -1,5 +1,5 @@
 -- =========================================================
--- SUPER STABLE: XENOWARE / KICIA / UE COUNTER
+-- ROBLOX COMPATIBLE: XENOWARE / KICIA / UE COUNTER
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -14,29 +14,34 @@ local espEnabled = false
 
 -- 1. HUD & NYITÓGOMB
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XenowareSimpleGui"
+ScreenGui.Name = "XenowareRobloxGui"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- HUD Felső Szöveg
+-- Várunk, míg betölt a PlayerGui
+repeat task.wait() until LocalPlayer and LocalPlayer:FindFirstChild("PlayerGui")
+ScreenGui.Parent = LocalPlayer.PlayerGui
+
+-- HUD Felső Szöveg (XENOWARE / KICIA / UE COUNTER)
 local HUDCounter = Instance.new("TextLabel")
 HUDCounter.Parent = ScreenGui
-HUDCounter.Size = UDim2.new(0, 260, 0, 30)
-HUDCounter.Position = UDim2.new(0.5, -130, 0.02, 0)
+HUDCounter.Size = UDim2.new(0, 270, 0, 30)
+HUDCounter.Position = UDim2.new(0.5, -135, 0.02, 0)
 HUDCounter.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 HUDCounter.BorderColor3 = Color3.fromRGB(140, 60, 220)
+HUDCounter.BorderSizePixel = 2
 HUDCounter.Text = "XENOWARE / KICIA / UE COUNTER"
 HUDCounter.TextColor3 = Color3.fromRGB(200, 150, 255)
 HUDCounter.Font = Enum.Font.Code
 HUDCounter.TextSize = 13
 
--- Mobil Nyitógomb
+-- Mobil Nyitógomb (tapperrrr)
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = ScreenGui
-ToggleBtn.Size = UDim2.new(0, 80, 0, 35)
+ToggleBtn.Size = UDim2.new(0, 85, 0, 35)
 ToggleBtn.Position = UDim2.new(0.02, 0, 0.2, 0)
 ToggleBtn.BackgroundColor3 = Color3.fromRGB(25, 12, 40)
 ToggleBtn.BorderColor3 = Color3.fromRGB(140, 60, 220)
+ToggleBtn.BorderSizePixel = 2
 ToggleBtn.Text = "tapperrrr"
 ToggleBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
 ToggleBtn.Font = Enum.Font.SourceSansBold
@@ -45,22 +50,22 @@ ToggleBtn.TextSize = 14
 -- 2. MENÜ ABLAK
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 250, 0, 220)
-MainFrame.Position = UDim2.new(0.5, -125, 0.4, -110)
+MainFrame.Size = UDim2.new(0, 250, 0, 210)
+MainFrame.Position = UDim2.new(0.5, -125, 0.35, 0)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 MainFrame.BorderColor3 = Color3.fromRGB(140, 60, 220)
 MainFrame.BorderSizePixel = 2
 
 local Title = Instance.new("TextLabel")
 Title.Parent = MainFrame
-Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Size = UDim2.new(1, 0, 0, 35)
 Title.BackgroundTransparency = 1
 Title.Text = "--- XENOWARE MENU ---"
 Title.TextColor3 = Color3.fromRGB(200, 150, 255)
 Title.Font = Enum.Font.SourceSansBold
 Title.TextSize = 16
 
--- Gomb készítő
+-- Gomb készítő segédfüggvény
 local function createSimpleBtn(text, posY, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = MainFrame
@@ -82,9 +87,9 @@ local function createSimpleBtn(text, posY, callback)
     end)
 end
 
-createSimpleBtn("RageBot Teleport", 40, function(v) rageEnabled = v end)
-createSimpleBtn("Knife Rage", 85, function(v) knifeEnabled = v end)
-createSimpleBtn("Master ESP", 130, function(v) espEnabled = v end)
+createSimpleBtn("RageBot Teleport", 45, function(v) rageEnabled = v end)
+createSimpleBtn("Knife Rage", 90, function(v) knifeEnabled = v end)
+createSimpleBtn("Master ESP", 135, function(v) espEnabled = v end)
 
 -- Nyitás / Zárás
 ToggleBtn.MouseButton1Click:Connect(function()
@@ -99,7 +104,7 @@ UserInputService.InputBegan:Connect(function(input, gpe)
     end
 end)
 
--- LOGIKÁK
+-- LOGIKÁK (Legközelebbi ellenfél megkeresése)
 local function getClosestPlayer()
     local closest, minDist = nil, math.huge
     local myChar = LocalPlayer.Character
@@ -120,6 +125,7 @@ local function getClosestPlayer()
     return closest
 end
 
+-- Teleport & Knife fő ciklusa
 RunService.Heartbeat:Connect(function()
     local myChar = LocalPlayer.Character
     if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
@@ -132,8 +138,10 @@ RunService.Heartbeat:Connect(function()
             local savedPos = hrp.CFrame
 
             if knifeEnabled then
+                -- Ellenfél mögé ugrás késeléshez
                 hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
             elseif rageEnabled then
+                -- Ellenfél fölé ugrás
                 hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 6, 0)
             end
 
@@ -145,6 +153,34 @@ RunService.Heartbeat:Connect(function()
                     hrp.CFrame = savedPos
                 end
             end
+        end
+    end
+end)
+
+-- ESP Highlight
+local espObjects = {}
+local function setupESP(player)
+    if player == LocalPlayer then return end
+    local hl = Instance.new("Highlight")
+    hl.Name = "XenoESP"
+    hl.FillColor = Color3.fromRGB(160, 40, 240)
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.Enabled = false
+
+    local function onChar(char) hl.Parent = char end
+    if player.Character then onChar(player.Character) end
+    player.CharacterAdded:Connect(onChar)
+    espObjects[player] = hl
+end
+
+for _, p in pairs(Players:GetPlayers()) do setupESP(p) end
+Players.PlayerAdded:Connect(setupESP)
+
+RunService.RenderStepped:Connect(function()
+    for p, hl in pairs(espObjects) do
+        if hl then
+            hl.Enabled = espEnabled
         end
     end
 end)
