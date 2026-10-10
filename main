@@ -1,5 +1,5 @@
 -- =========================================================
--- XENOWARE / KICIA / UE COUNTER
+-- XENOWARE / KICIA / UE COUNTER & ULTIMATE SCRIPT
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -10,17 +10,13 @@ local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
--- ---------------------------------------------------------
--- CONFIGURATION & THEMES
--- ---------------------------------------------------------
+-- CONFIG
 local Config = {
-    -- Style / Theme
-    CurrentTheme = "Xenoware", -- Xenoware, Kiciahook, UE, Default
+    CurrentTheme = "Xenoware",
     
     -- Rage & Knife
     RagebotTp = false,
     KnifeRage = false,
-    KnifeDistance = 15,
     AutoAttack = true,
     
     -- Aimbot
@@ -29,17 +25,12 @@ local Config = {
     AimPart = "Head",
     Smoothing = 0.5,
     TeamCheck = true,
-    WallCheck = true,
+    WallCheck = false,
     
-    -- Visuals & FOV
+    -- Visuals
     EspEnabled = false,
-    EspBox = true,
-    EspName = true,
-    EspHealth = true,
-    FovVisible = false,
-    FovRadius = 120,
     
-    -- Movement & Exploits
+    -- Player
     VoidSpamEnabled = false,
     VoidIntensity = 150,
     InfJump = false,
@@ -49,7 +40,6 @@ local Config = {
     HookURL = "https://raw.githubusercontent.com/kubucska123-cmd/holly/refs/heads/main/main"
 }
 
--- Témák színpalettái
 local Themes = {
     Xenoware = {
         Bg = Color3.fromRGB(15, 8, 25),
@@ -80,35 +70,27 @@ local Themes = {
 local espObjects = {}
 local menuOpen = true
 
--- FOV Circle Drawing
-local FovCircle = Drawing.new("Circle")
-FovCircle.Color = Color3.fromRGB(180, 100, 255)
-FovCircle.Thickness = 1.5
-FovCircle.NumSides = 64
-FovCircle.Filled = false
-FovCircle.Visible = false
-
--- ---------------------------------------------------------
--- 1. GUI LÉTREHOZÁSA
--- ---------------------------------------------------------
+-- 1. GUI LÉTREHOZÁS
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Ultimate_Tapperrrr_Gui"
+ScreenGui.Name = "Xenoware_Ultimate_Gui"
 ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+pcall(function()
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end)
 
--- HUD Top Counter
+-- Top HUD Counter (ÚJ SZÖVEGGEL)
 local HUDCounter = Instance.new("TextLabel")
 HUDCounter.Parent = ScreenGui
-HUDCounter.Size = UDim2.new(0, 220, 0, 28)
-HUDCounter.Position = UDim2.new(0.5, -110, 0.02, 0)
+HUDCounter.Size = UDim2.new(0, 280, 0, 28)
+HUDCounter.Position = UDim2.new(0.5, -140, 0.02, 0)
 HUDCounter.BackgroundColor3 = Themes.Xenoware.Bg
 HUDCounter.BorderColor3 = Themes.Xenoware.Accent
-HUDCounter.Text = "scriptcounter(tapperrrr)"
+HUDCounter.Text = "XENOWARE / KICIA / UE COUNTER"
 HUDCounter.TextColor3 = Themes.Xenoware.Text
 HUDCounter.Font = Enum.Font.Code
-HUDCounter.TextSize = 14
+HUDCounter.TextSize = 13
 
--- Mobile Toggle Button
+-- Mobile Button
 local MobileToggleBtn = Instance.new("TextButton")
 MobileToggleBtn.Parent = ScreenGui
 MobileToggleBtn.Size = UDim2.new(0, 85, 0, 35)
@@ -119,9 +101,8 @@ MobileToggleBtn.Text = "tapperrrr"
 MobileToggleBtn.TextColor3 = Themes.Xenoware.Text
 MobileToggleBtn.Font = Enum.Font.SourceSansBold
 MobileToggleBtn.TextSize = 14
-MobileToggleBtn.Active = true
 
--- Mobil Dragging
+-- Dragging
 local dragging, dragStart, startPos
 MobileToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -144,16 +125,15 @@ MobileToggleBtn.InputEnded:Connect(function(input)
     end
 end)
 
--- Main Menu Window
+-- Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 540, 0, 340)
-MainFrame.Position = UDim2.new(0.5, -270, 0.5, -170)
+MainFrame.Size = UDim2.new(0, 520, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -160)
 MainFrame.BackgroundColor3 = Themes.Xenoware.Bg
 MainFrame.BorderColor3 = Themes.Xenoware.Accent
 MainFrame.BorderSizePixel = 2
 
--- Header Title
 local Header = Instance.new("TextLabel")
 Header.Parent = MainFrame
 Header.Size = UDim2.new(1, -20, 0, 30)
@@ -165,7 +145,7 @@ Header.Font = Enum.Font.Code
 Header.TextSize = 13
 Header.TextXAlignment = Enum.TextXAlignment.Left
 
--- Tab Container
+-- Tab Bar
 local TabBar = Instance.new("Frame")
 TabBar.Parent = MainFrame
 TabBar.Size = UDim2.new(1, -20, 0, 28)
@@ -179,7 +159,6 @@ TabListLayout.FillDirection = Enum.FillDirection.Horizontal
 TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabListLayout.Padding = UDim.new(0, 2)
 
--- Content Frame
 local Content = Instance.new("Frame")
 Content.Parent = MainFrame
 Content.Size = UDim2.new(1, -20, 1, -70)
@@ -227,9 +206,7 @@ local TabAimbot = createTab("AIMBOT", 2)
 local TabVisuals = createTab("VISUALS", 3)
 local TabPlayer = createTab("PLAYER", 4)
 local TabStyle = createTab("STYLES", 5)
-local TabConfig = createTab("CONFIG", 6)
 
--- Segédfüggvény gombokhoz
 local function createButton(parent, text, default, callback)
     local btn = Instance.new("TextButton")
     btn.Parent = parent
@@ -251,33 +228,20 @@ local function createButton(parent, text, default, callback)
     return btn
 end
 
--- ---------------------------------------------------------
--- 2. TARTALOM FELTÖLTÉSE
--- ---------------------------------------------------------
-
--- RAGE & KNIFE TAB
+-- BUTTONS
 createButton(TabRage, "Knife Rage (Auto Backstab)", Config.KnifeRage, function(v) Config.KnifeRage = v end)
 createButton(TabRage, "RageBot Teleport Shot", Config.RagebotTp, function(v) Config.RagebotTp = v end)
-createButton(TabRage, "Auto Attack Weapon", Config.AutoAttack, function(v) Config.AutoAttack = v end)
 
--- AIMBOT TAB
 createButton(TabAimbot, "Enable Camera Aimbot", Config.AimbotEnabled, function(v) Config.AimbotEnabled = v end)
-createButton(TabAimbot, "Silent Aim (UE Hook)", Config.SilentAim, function(v) Config.SilentAim = v end)
-createButton(TabAimbot, "Draw FOV Circle", Config.FovVisible, function(v) Config.FovVisible = v end)
 createButton(TabAimbot, "Team Check", Config.TeamCheck, function(v) Config.TeamCheck = v end)
-createButton(TabAimbot, "Wall Check", Config.WallCheck, function(v) Config.WallCheck = v end)
 
--- VISUALS TAB
 createButton(TabVisuals, "Master ESP (Highlight)", Config.EspEnabled, function(v) Config.EspEnabled = v end)
-createButton(TabVisuals, "Box ESP", Config.EspBox, function(v) Config.EspBox = v end)
-createButton(TabVisuals, "Name ESP", Config.EspName, function(v) Config.EspName = v end)
 
--- PLAYER TAB
 createButton(TabPlayer, "VoidSpam (Anti-Aim)", Config.VoidSpamEnabled, function(v) Config.VoidSpamEnabled = v end)
 createButton(TabPlayer, "Infinite Jump", Config.InfJump, function(v) Config.InfJump = v end)
 createButton(TabPlayer, "SpeedHack (WalkSpeed 32)", Config.SpeedHack, function(v) Config.SpeedHack = v end)
 
--- STYLES TAB (TÉMAVÁLTÓ)
+-- THEME SWITCH
 local function applyTheme(themeName)
     local t = Themes[themeName]
     if not t then return end
@@ -285,4 +249,152 @@ local function applyTheme(themeName)
     MainFrame.BackgroundColor3 = t.Bg
     MainFrame.BorderColor3 = t.Accent
     TabBar.BackgroundColor3 = t.Header
-    HUDCounter.BackgroundColor3 = t.
+    HUDCounter.BackgroundColor3 = t.Bg
+    HUDCounter.BorderColor3 = t.Accent
+    HUDCounter.TextColor3 = t.Text
+    MobileToggleBtn.BackgroundColor3 = t.Header
+    MobileToggleBtn.BorderColor3 = t.Accent
+    MobileToggleBtn.TextColor3 = t.Text
+    Header.Text = "TAPPERRRR ULTIMATE | Style: [" .. themeName .. "]"
+    Header.TextColor3 = t.Text
+end
+
+for name, _ in pairs(Themes) do
+    local sBtn = Instance.new("TextButton")
+    sBtn.Parent = TabStyle
+    sBtn.Size = UDim2.new(0.98, 0, 0, 30)
+    sBtn.BackgroundColor3 = Themes.Xenoware.Header
+    sBtn.BorderColor3 = Themes.Xenoware.Accent
+    sBtn.Text = "Style: " .. name
+    sBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sBtn.Font = Enum.Font.SourceSansBold
+    sBtn.TextSize = 12
+
+    sBtn.MouseButton1Click:Connect(function()
+        applyTheme(name)
+    end)
+end
+
+-- FUNCTIONS
+local function getClosestEnemy()
+    local closest, minDistance = nil, math.huge
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+            local hum = p.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                local sameTeam = (Config.TeamCheck and LocalPlayer.Team and p.Team == LocalPlayer.Team)
+                if not sameTeam then
+                    local dist = (myChar.HumanoidRootPart.Position - p.Character.HumanoidRootPart.Position).Magnitude
+                    if dist < minDistance then
+                        minDistance = dist
+                        closest = p
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+UserInputService.JumpRequest:Connect(function()
+    if Config.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    if Config.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = Config.WalkSpeed
+    end
+
+    if Config.AimbotEnabled then
+        local target = getClosestEnemy()
+        if target and target.Character and target.Character:FindFirstChild(Config.AimPart) then
+            local targetPos = target.Character[Config.AimPart].Position
+            local camCFrame = Camera.CFrame
+            Camera.CFrame = camCFrame:Lerp(CFrame.new(camCFrame.Position, targetPos), Config.Smoothing)
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = myChar.HumanoidRootPart
+
+    if Config.KnifeRage then
+        local target = getClosestEnemy()
+        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
+            local targetHRP = target.Character.HumanoidRootPart
+            hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2)
+            if mouse1click then mouse1click() end
+        end
+    end
+
+    if Config.RagebotTp and not Config.VoidSpamEnabled and not Config.KnifeRage then
+        local target = getClosestEnemy()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local savedPos = hrp.CFrame
+            hrp.CFrame = target.Character.Head.CFrame * CFrame.new(0, 6, 0)
+            if mouse1click then mouse1click() end
+            task.wait(0.03)
+            if myChar:FindFirstChild("HumanoidRootPart") then
+                hrp.CFrame = savedPos
+            end
+        end
+    end
+
+    if Config.VoidSpamEnabled then
+        local orig = hrp.CFrame
+        hrp.CFrame = orig - Vector3.new(0, Config.VoidIntensity, 0)
+        task.wait(0.01)
+        if myChar:FindFirstChild("HumanoidRootPart") then
+            hrp.CFrame = orig
+        end
+    end
+end)
+
+local function toggleUI()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+end
+
+MobileToggleBtn.MouseButton1Click:Connect(toggleUI)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
+        toggleUI()
+    end
+end)
+
+-- ESP
+local function setupESP(player)
+    if player == LocalPlayer then return end
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "Safe_ESP"
+    hl.FillColor = Color3.fromRGB(160, 40, 240)
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.Enabled = false
+
+    local function onChar(char) hl.Parent = char end
+    if player.Character then onChar(player.Character) end
+    player.CharacterAdded:Connect(onChar)
+
+    espObjects[player] = hl
+end
+
+for _, p in pairs(Players:GetPlayers()) do setupESP(p) end
+Players.PlayerAdded:Connect(setupESP)
+
+RunService.RenderStepped:Connect(function()
+    for p, hl in pairs(espObjects) do
+        if hl then
+            hl.Enabled = Config.EspEnabled
+        end
+    end
+end)
