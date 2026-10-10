@@ -1,587 +1,119 @@
--- ==============================================================================
--- Xenoware // Ultimate Mobile Elite v4.0 [100% Start Guarantee, Bug-Free Lua]
--- ==============================================================================
+-- =========================================================
+-- XENOWARE v3.0 | Tapperrrr Mode [SECURE MODE ACTIVE]
+-- =========================================================
 
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
-local Camera = Workspace.CurrentCamera
+local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 
--- Biztonságos GUI Szülő meghatározás (mobilos executor kompatibilitás)
-local CoreGui = game:GetService("CoreGui")
-local guiParent = nil
-pcall(function()
-    if gethui then
-        guiParent = gethui()
-    end
-end)
-if not guiParent then
-    pcall(function()
-        guiParent = CoreGui
-    end)
-end
-if not guiParent or not pcall(function() local f = Instance.new("Folder", guiParent) f:Destroy() end) then
-    guiParent = LocalPlayer:WaitForChild("PlayerGui")
-end
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
 
--- Globális beállítások
-getgenv().XenowareToggles = {
-    AimEnabled = false,
-    RageEnabled = false,
+-- ---------------------------------------------------------
+-- BEÁLLÍTÁSOK / FONTOSABB ÁLLAPOTOK
+-- ---------------------------------------------------------
+local Config = {
+    AimbotEnabled = false,
+    AimPart = "Head",
+    Smoothing = 0.5,
     TeamCheck = true,
-    ShowFOV = true,
-    VoidSpam = false,
-    HitboxEnabled = false,
-    PlayerOutline = true,
-    UnlockAll = false,
-    FlyEnabled = false,
+    WallCheck = true,
+    AliveCheck = true,
+    
+    EspEnabled = false,
+    EspBox = true,
+    EspName = true,
+    EspHealth = true,
+    EspDistance = true,
+    
+    VoidSpamEnabled = false,
+    VoidIntensity = 150,
+    
+    HookURL = "https://raw.githubusercontent.com/kubucska123-cmd/holly/refs/heads/main/main"
 }
 
-getgenv().XenowareOptions = {
-    Distance = 1000,
-    FOVRadius = 150,
-    Smoothness = 0.25,
-    HitPart = "Head",
-    FlySpeed = 50,
-}
+local espObjects = {}
+local menuOpen = true
 
--- Előző GUI takarítása
-pcall(function()
-    if guiParent:FindFirstChild("XenowareMobileUI") then
-        guiParent.XenowareMobileUI:Destroy()
-    end
-end)
-
--- ==============================================================================
--- UI LÉTREHOZÁSA
--- ==============================================================================
+-- ---------------------------------------------------------
+-- 1. GUI LÉTREHOZÁSA (Xenoware Tématika)
+-- ---------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XenowareMobileUI"
-ScreenGui.Parent = guiParent
+ScreenGui.Name = "Xenoware_Tapperrrr"
 ScreenGui.ResetOnSpawn = false
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Értesítési Rendszer (Toast)
-local NotificationFrame = Instance.new("Frame")
-NotificationFrame.Name = "Notification"
-NotificationFrame.Parent = ScreenGui
-NotificationFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-NotificationFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
-NotificationFrame.BorderSizePixel = 1
-NotificationFrame.Position = UDim2.new(0.5, -125, 0, -60)
-NotificationFrame.Size = UDim2.new(0, 250, 0, 38)
-NotificationFrame.Visible = false
+-- Felső "scriptcounter(tapperrrr)" felirat
+local HUDCounter = Instance.new("TextLabel")
+HUDCounter.Parent = ScreenGui
+HUDCounter.Size = UDim2.new(0, 220, 0, 28)
+HUDCounter.Position = UDim2.new(0.5, -110, 0.05, 0)
+HUDCounter.BackgroundColor3 = Color3.fromRGB(20, 10, 30)
+HUDCounter.BorderColor3 = Color3.fromRGB(140, 60, 220)
+HUDCounter.BorderSizePixel = 1
+HUDCounter.Text = "scriptcounter(tapperrrr)"
+HUDCounter.TextColor3 = Color3.fromRGB(180, 100, 255)
+HUDCounter.Font = Enum.Font.Code
+HUDCounter.TextSize = 14
 
-local NotifCorner = Instance.new("UICorner")
-NotifCorner.CornerRadius = UDim.new(0, 8)
-NotifCorner.Parent = NotificationFrame
+-- Mozgatható Mobil Toggle Gomb
+local MobileToggleBtn = Instance.new("TextButton")
+MobileToggleBtn.Parent = ScreenGui
+MobileToggleBtn.Size = UDim2.new(0, 80, 0, 35)
+MobileToggleBtn.Position = UDim2.new(0.02, 0, 0.2, 0)
+MobileToggleBtn.BackgroundColor3 = Color3.fromRGB(30, 15, 45)
+MobileToggleBtn.BorderColor3 = Color3.fromRGB(160, 80, 240)
+MobileToggleBtn.Text = "tapperrrr"
+MobileToggleBtn.TextColor3 = Color3.fromRGB(200, 150, 255)
+MobileToggleBtn.Font = Enum.Font.SourceSansBold
+MobileToggleBtn.TextSize = 14
+MobileToggleBtn.Active = true
 
-local NotifLabel = Instance.new("TextLabel")
-NotifLabel.Parent = NotificationFrame
-NotifLabel.BackgroundTransparency = 1
-NotifLabel.Size = UDim2.new(1, 0, 1, 0)
-NotifLabel.Font = Enum.Font.GothamBold
-NotifLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
-NotifLabel.TextSize = 11
-NotifLabel.Text = "Xenoware: Fut!"
+-- Húzhatóság mobilra
+local dragging, dragStart, startPos
+MobileToggleBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = MobileToggleBtn.Position
+    end
+end)
 
-local function SendNotification(text)
-    pcall(function()
-        NotifLabel.Text = text
-        NotificationFrame.Position = UDim2.new(0.5, -125, 0, -60)
-        NotificationFrame.Visible = true
-        
-        local twIn = TweenService:Create(NotificationFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -125, 0, 20)})
-        twIn:Play()
-        
-        task.spawn(function()
-            task.wait(2)
-            local twOut = TweenService:Create(NotificationFrame, TweenInfo.new(0.25, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -125, 0, -60)})
-            twOut:Play()
-            task.wait(0.25)
-            NotificationFrame.Visible = false
-        end)
-    end)
-end
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        MobileToggleBtn.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
 
--- FOV Kör
-local FOVFrame = Instance.new("Frame")
-FOVFrame.Name = "FOVCircle"
-FOVFrame.Parent = ScreenGui
-FOVFrame.BackgroundTransparency = 1
-FOVFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVFrame.Size = UDim2.new(0, 300, 0, 300)
-FOVFrame.Visible = false
+MobileToggleBtn.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
 
-local FOVStroke = Instance.new("UIStroke")
-FOVStroke.Parent = FOVFrame
-FOVStroke.Color = Color3.fromRGB(0, 255, 128)
-FOVStroke.Transparency = 0.3
-FOVStroke.Thickness = 1.5
-
-local FOVCorner = Instance.new("UICorner")
-FOVCorner.CornerRadius = UDim.new(1, 0)
-FOVCorner.Parent = FOVFrame
-
--- Nyitó Gomb
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "MenuToggle"
-ToggleButton.Parent = ScreenGui
-ToggleButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-ToggleButton.BorderColor3 = Color3.fromRGB(0, 255, 128)
-ToggleButton.BorderSizePixel = 2
-ToggleButton.Position = UDim2.new(0, 15, 0, 70)
-ToggleButton.Size = UDim2.new(0, 120, 0, 40)
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Text = "⚡ XENOWARE"
-ToggleButton.TextColor3 = Color3.fromRGB(0, 255, 128)
-ToggleButton.TextSize = 11
-
-local BtnCorner = Instance.new("UICorner")
-BtnCorner.CornerRadius = UDim.new(0, 8)
-BtnCorner.Parent = ToggleButton
-
--- Fő Ablak
+-- Main Frame (Xenoware UI)
 local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
-MainFrame.BorderColor3 = Color3.fromRGB(0, 255, 128)
-MainFrame.BorderSizePixel = 1
-MainFrame.Position = UDim2.new(0.5, -170, 0.5, -205)
-MainFrame.Size = UDim2.new(0, 340, 0, 410)
-MainFrame.Visible = true -- Első induláskor látható legyen, hogy látsd a működést
+MainFrame.Size = UDim2.new(0, 580, 0, 380)
+MainFrame.Position = UDim2.new(0.5, -290, 0.5, -190)
+MainFrame.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
+MainFrame.BorderColor3 = Color3.fromRGB(120, 40, 180)
+MainFrame.BorderSizePixel = 2
 
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = MainFrame
+-- Header
+local Header = Instance.new("TextLabel")
+Header.Parent = MainFrame
+Header.Size = UDim2.new(1, -20, 0, 30)
+Header.Position = UDim2.new(0, 10, 0, 5)
+Header.BackgroundTransparency = 1
+Header.Text = "XENOWARE v3.0 | Tapper Mode [SECURE MODE ACTIVE]"
+Header.TextColor3 = Color3.fromRGB(190, 120, 255)
+Header.Font = Enum.Font.Code
+Header.TextSize = 15
+Header.TextXAlignment = Enum.TextXAlignment.Left
 
--- Címsor
-local TitleBar = Instance.new("Frame")
-TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
-TitleBar.Size = UDim2.new(1, 0, 0, 35)
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 10)
-TitleCorner.Parent = TitleBar
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Parent = TitleBar
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Position = UDim2.new(0, 12, 0, 0)
-TitleLabel.Size = UDim2.new(1, -50, 1, 0)
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Xenoware // Elite v4.0"
-TitleLabel.TextColor3 = Color3.fromRGB(0, 255, 128)
-TitleLabel.TextSize = 12
-TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
-local CloseBtn = Instance.new("TextButton")
-CloseBtn.Parent = TitleBar
-CloseBtn.BackgroundColor3 = Color3.fromRGB(200, 40, 40)
-CloseBtn.Position = UDim2.new(1, -28, 0, 7)
-CloseBtn.Size = UDim2.new(0, 21, 0, 21)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseBtn.TextSize = 10
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 5)
-CloseCorner.Parent = CloseBtn
-
-CloseBtn.MouseButton1Click:Connect(function() MainFrame.Visible = false end)
-ToggleButton.MouseButton1Click:Connect(function() MainFrame.Visible = not MainFrame.Visible end)
-
--- Fülek (Tabs) Sávja
+-- Tabok
 local TabBar = Instance.new("Frame")
-TabBar.Parent = MainFrame
-TabBar.BackgroundTransparency = 1
-TabBar.Position = UDim2.new(0, 8, 0, 42)
-TabBar.Size = UDim2.new(1, -16, 0, 30)
-
-local TabListLayout = Instance.new("UIListLayout")
-TabListLayout.Parent = TabBar
-TabListLayout.FillDirection = Enum.FillDirection.Horizontal
-TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-TabListLayout.Padding = UDim.new(0, 4)
-
-local tabs = {"Combat", "Visuals", "Skins", "Misc"}
-local contentFrames = {}
-local tabButtons = {}
-
-for i, tabName in ipairs(tabs) do
-    local tabBtn = Instance.new("TextButton")
-    tabBtn.Parent = TabBar
-    tabBtn.BackgroundColor3 = (i == 1) and Color3.fromRGB(0, 45, 25) or Color3.fromRGB(20, 20, 20)
-    tabBtn.BorderColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(40, 40, 40)
-    tabBtn.BorderSizePixel = 1
-    tabBtn.Size = UDim2.new(0.238, 0, 1, 0)
-    tabBtn.Font = Enum.Font.GothamBold
-    tabBtn.Text = tabName
-    tabBtn.TextColor3 = (i == 1) and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(150, 150, 150)
-    tabBtn.TextSize = 11
-
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 6)
-    tabCorner.Parent = tabBtn
-
-    tabButtons[tabName] = tabBtn
-
-    local cFrame = Instance.new("ScrollingFrame")
-    cFrame.Parent = MainFrame
-    cFrame.BackgroundTransparency = 1
-    cFrame.Position = UDim2.new(0, 10, 0, 78)
-    cFrame.Size = UDim2.new(1, -20, 1, -86)
-    cFrame.CanvasSize = UDim2.new(0, 0, 0, 480)
-    cFrame.ScrollBarThickness = 2
-    cFrame.Visible = (i == 1)
-    
-    local list = Instance.new("UIListLayout")
-    list.Parent = cFrame
-    list.SortOrder = Enum.SortOrder.LayoutOrder
-    list.Padding = UDim.new(0, 6)
-
-    contentFrames[tabName] = cFrame
-
-    tabBtn.MouseButton1Click:Connect(function()
-        for _, frame in pairs(contentFrames) do frame.Visible = false end
-        for _, btn in pairs(tabButtons) do
-            btn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-            btn.TextColor3 = Color3.fromRGB(150, 150, 150)
-            btn.BorderColor3 = Color3.fromRGB(40, 40, 40)
-        end
-        
-        cFrame.Visible = true
-        tabBtn.BackgroundColor3 = Color3.fromRGB(0, 45, 25)
-        tabBtn.TextColor3 = Color3.fromRGB(0, 255, 128)
-        tabBtn.BorderColor3 = Color3.fromRGB(0, 255, 128)
-    end)
-end
-
--- UI Építők
-local function AddToggle(tabName, text, toggleKey)
-    local parent = contentFrames[tabName]
-    if not parent then return end
-
-    local btn = Instance.new("TextButton")
-    btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    btn.BorderColor3 = Color3.fromRGB(35, 35, 35)
-    btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.Font = Enum.Font.GothamMedium
-    btn.Text = "  " .. text .. ": [OFF]"
-    btn.TextColor3 = Color3.fromRGB(180, 180, 180)
-    btn.TextSize = 11
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        getgenv().XenowareToggles[toggleKey] = not getgenv().XenowareToggles[toggleKey]
-        local state = getgenv().XenowareToggles[toggleKey]
-        btn.Text = "  " .. text .. ": [" .. (state and "ON" or "OFF") .. "]"
-        btn.TextColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(180, 180, 180)
-        btn.BorderColor3 = state and Color3.fromRGB(0, 255, 128) or Color3.fromRGB(35, 35, 35)
-        SendNotification(text .. ": " .. (state and "Bekapcsolva" or "Kikapcsolva"))
-    end)
-end
-
-local function AddButtonOption(tabName, text, options, optionKey)
-    local parent = contentFrames[tabName]
-    if not parent then return end
-
-    local currentIndex = 1
-    for i, v in ipairs(options) do
-        if v == getgenv().XenowareOptions[optionKey] then currentIndex = i end
-    end
-
-    local btn = Instance.new("TextButton")
-    btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(16, 16, 16)
-    btn.BorderColor3 = Color3.fromRGB(35, 35, 35)
-    btn.Size = UDim2.new(1, 0, 0, 36)
-    btn.Font = Enum.Font.GothamMedium
-    btn.Text = "  " .. text .. ": < " .. tostring(getgenv().XenowareOptions[optionKey]) .. " >"
-    btn.TextColor3 = Color3.fromRGB(0, 255, 128)
-    btn.TextSize = 11
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        currentIndex = currentIndex + 1
-        if currentIndex > #options then currentIndex = 1 end
-        getgenv().XenowareOptions[optionKey] = options[currentIndex]
-        btn.Text = "  " .. text .. ": < " .. tostring(options[currentIndex]) .. " >"
-    end)
-end
-
-local function AddActionButton(tabName, text, callback)
-    local parent = contentFrames[tabName]
-    if not parent then return end
-
-    local btn = Instance.new("TextButton")
-    btn.Parent = parent
-    btn.BackgroundColor3 = Color3.fromRGB(0, 35, 20)
-    btn.BorderColor3 = Color3.fromRGB(0, 255, 128)
-    btn.Size = UDim2.new(1, 0, 0, 38)
-    btn.Font = Enum.Font.GothamBold
-    btn.Text = "  ⚡ " .. text
-    btn.TextColor3 = Color3.fromRGB(0, 255, 128)
-    btn.TextSize = 11
-    btn.TextXAlignment = Enum.TextXAlignment.Left
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-
-    btn.MouseButton1Click:Connect(function()
-        pcall(callback)
-    end)
-end
-
--- ==============================================================================
--- MENÜ PONTOK
--- ==============================================================================
-
--- COMBAT
-AddToggle("Combat", "Aimbot Camera Lock", "AimEnabled")
-AddButtonOption("Combat", "Aimbot Smoothness", {0.1, 0.2, 0.25, 0.4, 0.7, 1.0}, "Smoothness")
-AddButtonOption("Combat", "Aimbot HitPart", {"Head", "HumanoidRootPart"}, "HitPart")
-AddButtonOption("Combat", "FOV Size", {80, 120, 150, 200, 300}, "FOVRadius")
-AddToggle("Combat", "Ragebot (Teleport + Attack)", "RageEnabled")
-AddToggle("Combat", "Void Hit & Run (Teleport Loop)", "VoidSpam")
-AddToggle("Combat", "Hitbox Expander", "HitboxEnabled")
-
--- VISUALS
-AddToggle("Visuals", "Player Outline ESP (Highlight)", "PlayerOutline")
-AddToggle("Visuals", "Show FOV Circle", "ShowFOV")
-
--- SKINS (BIZTONSÁGOS SKIN ÉS INVENTORY UNLOCKER)
-AddActionButton("Skins", "Load Inventory & Weapon Skins", function()
-    pcall(function()
-        if getgc then
-            for _, v in pairs(getgc(true)) do
-                if typeof(v) == "table" then
-                    if rawget(v, "Skins") or rawget(v, "WeaponSkins") or rawget(v, "Inventory") or rawget(v, "OwnedSkins") then
-                        for k, _ in pairs(v) do
-                            if type(k) == "string" then v[k] = true end
-                        end
-                    end
-                end
-            end
-        end
-    end)
-    SendNotification("Skinek és kozmetikumok feloldva!")
-end)
-
-AddToggle("Skins", "Auto-Apply Skin Bypass Loop", "UnlockAll")
-
--- MISC
-AddToggle("Misc", "Advanced Camera Fly", "FlyEnabled")
-
--- Mozgathatóság (Drag)
-local function makeDraggable(guiObject)
-    local dragging, dragInput, dragStart, startPos
-    guiObject.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragStart = input.Position
-            startPos = guiObject.Position
-        end
-    end)
-    guiObject.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
-            local delta = input.Position - dragStart
-            guiObject.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-        end
-    end)
-end
-
-makeDraggable(MainFrame)
-makeDraggable(ToggleButton)
-
--- ==============================================================================
--- BIZTONSÁGOS HÁTTÉRFOLYAMATOK
--- ==============================================================================
-
-local function getBestTarget()
-    local bestTarget = nil
-    local shortestDist = math.huge
-    local mousePos = UserInputService:GetMouseLocation()
-    local localChar = LocalPlayer.Character
-    
-    if not localChar or not localChar:FindFirstChild("HumanoidRootPart") then return nil end
-    local localHRP = localChar.HumanoidRootPart
-
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            local humanoid = player.Character:FindFirstChild("Humanoid")
-            local hrp = player.Character:FindFirstChild("HumanoidRootPart")
-            
-            if humanoid and humanoid.Health > 0 and hrp then
-                if getgenv().XenowareToggles.TeamCheck and player.Team == LocalPlayer.Team and player.Team ~= nil then
-                    continue
-                end
-                
-                local dist = (localHRP.Position - hrp.Position).Magnitude
-                if dist <= getgenv().XenowareOptions.Distance then
-                    local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-                    if onScreen then
-                        local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
-                        if screenDist <= getgenv().XenowareOptions.FOVRadius and screenDist < shortestDist then
-                            shortestDist = screenDist
-                            bestTarget = player
-                        end
-                    end
-                end
-            end
-        end
-    end
-    return bestTarget
-end
-
--- FOV Frissítés
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        local mousePos = UserInputService:GetMouseLocation()
-        local fovSize = getgenv().XenowareOptions.FOVRadius * 2
-        FOVFrame.Size = UDim2.new(0, fovSize, 0, fovSize)
-        FOVFrame.Position = UDim2.new(0, mousePos.X, 0, mousePos.Y)
-        FOVFrame.Visible = getgenv().XenowareToggles.ShowFOV
-    end)
-end)
-
--- Aimbot & Ragebot
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        local toggles = getgenv().XenowareToggles
-        if not toggles.AimEnabled and not toggles.RageEnabled then return end
-
-        local target = getBestTarget()
-        if target and target.Character then
-            local partName = getgenv().XenowareOptions.HitPart
-            local part = target.Character:FindFirstChild(partName) or target.Character:FindFirstChild("Head") or target.Character:FindFirstChild("HumanoidRootPart")
-            
-            if part and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                local localHRP = LocalPlayer.Character.HumanoidRootPart
-                
-                if toggles.RageEnabled and not toggles.VoidSpam then
-                    local targetHRP = target.Character:FindFirstChild("HumanoidRootPart")
-                    if targetHRP then
-                        localHRP.CFrame = targetHRP.CFrame + Vector3.new(0, 5, 0)
-                        pcall(function() if mouse1click then mouse1click() end end)
-                    end
-                end
-                
-                if toggles.AimEnabled and not toggles.RageEnabled then
-                    local targetCF = CFrame.new(Camera.CFrame.Position, part.Position)
-                    Camera.CFrame = Camera.CFrame:Lerp(targetCF, getgenv().XenowareOptions.Smoothness)
-                end
-            end
-        end
-    end)
-end)
-
--- Void Spam
-task.spawn(function()
-    while true do
-        task.wait(0.15)
-        pcall(function()
-            if getgenv().XenowareToggles.VoidSpam then
-                local localChar = LocalPlayer.Character
-                if localChar and localChar:FindFirstChild("HumanoidRootPart") then
-                    local hrp = localChar.HumanoidRootPart
-                    local originalPos = hrp.CFrame
-                    
-                    local target = getBestTarget()
-                    if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-                        local targetHRP = target.Character.HumanoidRootPart
-                        hrp.CFrame = targetHRP.CFrame + Vector3.new(0, 4, 0)
-                        pcall(function() if mouse1click then mouse1click() end end)
-                        task.wait(0.04)
-                        hrp.CFrame = originalPos
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- Hitbox Expander
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        if getgenv().XenowareToggles.HitboxEnabled then
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = p.Character.HumanoidRootPart
-                    hrp.Size = Vector3.new(4, 4, 2)
-                    hrp.Transparency = 0.6
-                    hrp.CanCollide = false
-                end
-            end
-        end
-    end)
-end)
-
--- Player Outline ESP
-task.spawn(function()
-    while true do
-        task.wait(1.5)
-        pcall(function()
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= LocalPlayer and p.Character then
-                    if getgenv().XenowareToggles.PlayerOutline then
-                        if not p.Character:FindFirstChild("XenowareOutline") then
-                            local hl = Instance.new("Highlight")
-                            hl.Name = "XenowareOutline"
-                            hl.Adornee = p.Character
-                            hl.FillTransparency = 1
-                            hl.OutlineColor = Color3.fromRGB(0, 255, 128)
-                            hl.OutlineTransparency = 0
-                            hl.Parent = p.Character
-                        end
-                    else
-                        local hl = p.Character:FindFirstChild("XenowareOutline")
-                        if hl then hl:Destroy() end
-                    end
-                end
-            end
-        end)
-    end
-end)
-
--- Fly
-RunService.RenderStepped:Connect(function()
-    pcall(function()
-        if getgenv().XenowareToggles.FlyEnabled then
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") then
-                char.Humanoid.PlatformStand = true
-                local moveDir = Vector3.new()
-                if UserInputService:IsKeyDown(Enum.KeyCode.W) then moveDir = moveDir + Camera.CFrame.LookVector end
-                if UserInputService:IsKeyDown(Enum.KeyCode.S) then moveDir = moveDir - Camera.CFrame.LookVector end
-                char.HumanoidRootPart.Velocity = moveDir * getgenv().XenowareOptions.FlySpeed
-            end
-        else
-            local char = LocalPlayer.Character
-            if char and char:FindFirstChild("Humanoid") then
-                char.Humanoid.PlatformStand = false
-            end
-        end
-    end)
-end)
-
-SendNotification("Xenoware Elite v4.0 sikeresen elindult!")
+TabBar.Parent = Main
