@@ -1,5 +1,5 @@
 -- =========================================================
--- ROBLOX RIVALS ULTIMATE: XENOWARE / KICIA / UE ALL-IN-ONE
+-- ROBLOX RIVALS ULTIMATE | XENOWARE / KICIA / UE ALL-IN-ONE
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -8,26 +8,31 @@ local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
 local LocalPlayer = Players.LocalPlayer
 
--- Globális konfiguráció (getgenv védett struktúra)
-getgenv().TapperConfig = {
+-- Védett globális állapotok
+getgenv().TapperMaster = {
     CurrentTheme = "Xenoware",
     
     -- Rage & Combat
     RageTp = false,
     KnifeRage = false,
-    AutoAttack = true,
+    TriggerBot = false,
+    
+    -- Aimbot
     AimbotEnabled = false,
+    SilentAim = false,
     AimPart = "Head",
     
-    -- Visuals & Skins
+    -- Visuals
     EspEnabled = false,
-    EspColor = Color3.fromRGB(160, 40, 240),
+    EspBoxes = false,
+    EspTracers = false,
     
-    -- Player & Movement
+    -- Movement & Exploits
+    VoidSpam = false,
     InfJump = false,
     SpeedHack = false,
     WalkSpeed = 28,
-    VoidSpam = false,
+    Noclip = false,
     
     HookURL = "https://raw.githubusercontent.com/kubucska123-cmd/holly/refs/heads/main/main"
 }
@@ -65,13 +70,13 @@ local espObjects = {}
 
 -- 1. GUI LÉTREHOZÁSA (CoreGui / PlayerGui)
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "XenowareUltimateRivals"
+ScreenGui.Name = "XenowareRivalsAllInOne"
 ScreenGui.ResetOnSpawn = false
 
 local success, _ = pcall(function() ScreenGui.Parent = game:GetService("CoreGui") end)
 if not success then ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui") end
 
--- HUD Top Counter (XENOWARE / KICIA / UE COUNTER)
+-- HUD Felső Szöveg
 local HUDCounter = Instance.new("TextLabel")
 HUDCounter.Parent = ScreenGui
 HUDCounter.Size = UDim2.new(0, 280, 0, 32)
@@ -88,7 +93,7 @@ local hudCorner = Instance.new("UICorner")
 hudCorner.CornerRadius = UDim.new(0, 8)
 hudCorner.Parent = HUDCounter
 
--- Mobil Toggle Button (tapperrrr)
+-- Mobil Nyitógomb (tapperrrr)
 local ToggleBtn = Instance.new("TextButton")
 ToggleBtn.Parent = ScreenGui
 ToggleBtn.Size = UDim2.new(0, 90, 0, 40)
@@ -129,11 +134,11 @@ ToggleBtn.InputEnded:Connect(function(input)
     end
 end)
 
--- 2. MAIN MENU FRAME
+-- 2. FŐ MENÜ ABLAK
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 500, 0, 320)
-MainFrame.Position = UDim2.new(0.5, -250, 0.35, 0)
+MainFrame.Size = UDim2.new(0, 520, 0, 330)
+MainFrame.Position = UDim2.new(0.5, -260, 0.35, 0)
 MainFrame.BackgroundColor3 = Themes.Xenoware.Bg
 MainFrame.BorderColor3 = Themes.Xenoware.Accent
 MainFrame.BorderSizePixel = 1
@@ -222,10 +227,10 @@ local function createButton(parent, text, key)
     local btn = Instance.new("TextButton")
     btn.Parent = parent
     btn.Size = UDim2.new(0.98, 0, 0, 32)
-    btn.BackgroundColor3 = getgenv().TapperConfig[key] and Themes.Xenoware.Accent or Themes.Xenoware.Header
+    btn.BackgroundColor3 = getgenv().TapperMaster[key] and Themes.Xenoware.Accent or Themes.Xenoware.Header
     btn.BorderColor3 = Themes.Xenoware.Accent
     btn.BorderSizePixel = 1
-    btn.Text = text .. (getgenv().TapperConfig[key] and ": [BE]" or ": [KI]")
+    btn.Text = text .. (getgenv().TapperMaster[key] and ": [BE]" or ": [KI]")
     btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     btn.Font = Enum.Font.SourceSansBold
     btn.TextSize = 13
@@ -235,31 +240,35 @@ local function createButton(parent, text, key)
     bCorner.Parent = btn
 
     btn.MouseButton1Click:Connect(function()
-        local state = not getgenv().TapperConfig[key]
-        getgenv().TapperConfig[key] = state
+        local state = not getgenv().TapperMaster[key]
+        getgenv().TapperMaster[key] = state
         btn.BackgroundColor3 = state and Themes.Xenoware.Accent or Themes.Xenoware.Header
         btn.Text = text .. (state and ": [BE]" or ": [KI]")
     end)
     return btn
 end
 
--- 3. TARTALOM FELTÖLTÉSE
+-- 3. TARTALOM FELTÖLTÉSE (Sok új funkcióval)
 createButton(TabRage, "Knife Rage (Auto Backstab)", "KnifeRage")
 createButton(TabRage, "RageBot Teleport Shot", "RageTp")
+createButton(TabRage, "TriggerBot (Auto Attack)", "TriggerBot")
 
 createButton(TabAimbot, "Camera Aimbot", "AimbotEnabled")
+createButton(TabAimbot, "Silent Aim (Target Lock)", "SilentAim")
 
 createButton(TabVisuals, "Master ESP (Highlight)", "EspEnabled")
+createButton(TabVisuals, "Box ESP (Outline)", "EspBoxes")
 
 createButton(TabPlayer, "VoidSpam (Anti-Aim)", "VoidSpam")
 createButton(TabPlayer, "Infinite Jump", "InfJump")
 createButton(TabPlayer, "SpeedHack (Speed 28)", "SpeedHack")
+createButton(TabPlayer, "Noclip (WallPass)", "Noclip")
 
 -- TÉMAVÁLTÓ (STYLES)
 local function applyTheme(themeName)
     local t = Themes[themeName]
     if not t then return end
-    getgenv().TapperConfig.CurrentTheme = themeName
+    getgenv().TapperMaster.CurrentTheme = themeName
     MainFrame.BackgroundColor3 = t.Bg
     MainFrame.BorderColor3 = t.Accent
     TabBar.BackgroundColor3 = t.Header
@@ -308,7 +317,7 @@ cSave.Parent = SaveBtn
 SaveBtn.MouseButton1Click:Connect(function()
     pcall(function()
         if setclipboard then
-            setclipboard(HttpService:JSONEncode(getgenv().TapperConfig))
+            setclipboard(HttpService:JSONEncode(getgenv().TapperMaster))
             SaveBtn.Text = "Config Copied!"
             task.wait(1.5)
             SaveBtn.Text = "Save Config to Clipboard"
@@ -316,7 +325,7 @@ SaveBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- 4. LOGIKÁK & ANTI-CHEAT BYPASS
+-- 4. LOGIKÁK
 local function getClosestEnemy()
     local closest, minDist = nil, math.huge
     local myChar = LocalPlayer.Character
@@ -345,19 +354,30 @@ end
 
 -- Infinite Jump
 UserInputService.JumpRequest:Connect(function()
-    if getgenv().TapperConfig.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+    if getgenv().TapperMaster.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
 
--- Main Render Loop (Aimbot & Speed)
+-- Main Render Loop
 RunService.RenderStepped:Connect(function()
-    local cfg = getgenv().TapperConfig
+    local cfg = getgenv().TapperMaster
     
+    -- SpeedHack
     if cfg.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
         LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = cfg.WalkSpeed
     end
 
+    -- Noclip
+    if cfg.Noclip and LocalPlayer.Character then
+        for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = false
+            end
+        end
+    end
+
+    -- Aimbot
     if cfg.AimbotEnabled then
         local target = getClosestEnemy()
         if target and target.Character and target.Character:FindFirstChild("Head") then
@@ -367,13 +387,13 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Main Heartbeat Loop (Knife Rage, RageBot, VoidSpam)
+-- Main Heartbeat Loop (Combat & Rage)
 RunService.Heartbeat:Connect(function()
     local myChar = LocalPlayer.Character
     if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
     local hrp = myChar.HumanoidRootPart
 
-    local cfg = getgenv().TapperConfig
+    local cfg = getgenv().TapperMaster
     if cfg.KnifeRage or cfg.RageTp then
         local target = getClosestEnemy()
         if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
@@ -382,4 +402,69 @@ RunService.Heartbeat:Connect(function()
 
             if cfg.KnifeRage then
                 hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 0, 2.5)
-            elseif
+            elseif cfg.RageTp then
+                hrp.CFrame = targetHRP.CFrame * CFrame.new(0, 5.5, 0)
+            end
+
+            pcall(function()
+                if mouse1click then mouse1click() end
+            end)
+
+            if cfg.RageTp then
+                task.wait(0.04)
+                if myChar:FindFirstChild("HumanoidRootPart") then
+                    hrp.CFrame = savedPos
+                end
+            end
+        end
+    end
+
+    if cfg.VoidSpam then
+        local orig = hrp.CFrame
+        hrp.CFrame = orig - Vector3.new(0, 150, 0)
+        task.wait(0.01)
+        if myChar:FindFirstChild("HumanoidRootPart") then
+            hrp.CFrame = orig
+        end
+    end
+end)
+
+-- Nyitás / Zárás
+ToggleBtn.MouseButton1Click:Connect(function()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+end)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
+        menuOpen = not menuOpen
+        MainFrame.Visible = menuOpen
+    end
+end)
+
+-- ESP Highlight
+local function setupESP(player)
+    if player == LocalPlayer then return end
+    local hl = Instance.new("Highlight")
+    hl.Name = "RivalsMasterESP"
+    hl.FillColor = Color3.fromRGB(160, 40, 240)
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.Enabled = false
+
+    local function onChar(char) hl.Parent = char end
+    if player.Character then onChar(player.Character) end
+    player.CharacterAdded:Connect(onChar)
+    espObjects[player] = hl
+end
+
+for _, p in pairs(Players:GetPlayers()) do setupESP(p) end
+Players.PlayerAdded:Connect(setupESP)
+
+RunService.RenderStepped:Connect(function()
+    for p, hl in pairs(espObjects) do
+        if hl then
+            hl.Enabled = getgenv().TapperMaster.EspEnabled
+        end
+    end
+end)
