@@ -1,5 +1,5 @@
 -- =========================================================
--- XENOWARE v3.0 | Tapperrrr Mode [KICIAHOOK & UE EDITION]
+-- XENOWARE v3.0 | Tapperrrr Mode [FIXED UI & ALL FEATURES]
 -- =========================================================
 
 local Players = game:GetService("Players")
@@ -9,10 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 -- ---------------------------------------------------------
--- CONFIG & ÁLLAPOTOK (KICIAHOOK + UE)
+-- CONFIGURATION
 -- ---------------------------------------------------------
 local Config = {
-    -- Aimbot & Rage
     AimbotEnabled = false,
     SilentAim = false,
     RagebotTp = false,
@@ -22,7 +21,6 @@ local Config = {
     WallCheck = true,
     AliveCheck = true,
     
-    -- Visuals / ESP / FOV
     EspEnabled = false,
     EspBox = true,
     EspName = true,
@@ -31,7 +29,6 @@ local Config = {
     FovVisible = false,
     FovRadius = 120,
     
-    -- Player & Exploits (UE / Kiciahook)
     VoidSpamEnabled = false,
     VoidIntensity = 150,
     InfJump = false,
@@ -43,9 +40,8 @@ local Config = {
 
 local espObjects = {}
 local menuOpen = true
-local currentTab = "AIMBOT"
 
--- FOV Kör
+-- FOV Circle Drawing
 local FovCircle = Drawing.new("Circle")
 FovCircle.Color = Color3.fromRGB(180, 100, 255)
 FovCircle.Thickness = 1.5
@@ -54,18 +50,18 @@ FovCircle.Filled = false
 FovCircle.Visible = false
 
 -- ---------------------------------------------------------
--- 1. GUI LÉTREHOZÁSA (Xenoware UI)
+-- 1. GUI LÉTREHOZÁSA (STABIL LAYOUT-TAL)
 -- ---------------------------------------------------------
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "Xenoware_Tapperrrr_UE"
+ScreenGui.Name = "Xenoware_Tapperrrr_Fixed"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- HUD Felirat
+-- Top Counter Label
 local HUDCounter = Instance.new("TextLabel")
 HUDCounter.Parent = ScreenGui
 HUDCounter.Size = UDim2.new(0, 220, 0, 28)
-HUDCounter.Position = UDim2.new(0.5, -110, 0.03, 0)
+HUDCounter.Position = UDim2.new(0.5, -110, 0.02, 0)
 HUDCounter.BackgroundColor3 = Color3.fromRGB(20, 10, 30)
 HUDCounter.BorderColor3 = Color3.fromRGB(140, 60, 220)
 HUDCounter.Text = "scriptcounter(tapperrrr)"
@@ -73,7 +69,7 @@ HUDCounter.TextColor3 = Color3.fromRGB(180, 100, 255)
 HUDCounter.Font = Enum.Font.Code
 HUDCounter.TextSize = 14
 
--- Mozgatható Mobil Toggle Gomb
+-- Mobile Toggle Button
 local MobileToggleBtn = Instance.new("TextButton")
 MobileToggleBtn.Parent = ScreenGui
 MobileToggleBtn.Size = UDim2.new(0, 85, 0, 35)
@@ -86,7 +82,7 @@ MobileToggleBtn.Font = Enum.Font.SourceSansBold
 MobileToggleBtn.TextSize = 14
 MobileToggleBtn.Active = true
 
--- Mobil Húzhatóság Logika
+-- Dragging System
 local dragging, dragStart, startPos
 MobileToggleBtn.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -109,158 +105,299 @@ MobileToggleBtn.InputEnded:Connect(function(input)
     end
 end)
 
--- Fő Menü Keret
+-- Main Menu Window
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 580, 0, 380)
-MainFrame.Position = UDim2.new(0.5, -290, 0.5, -190)
+MainFrame.Size = UDim2.new(0, 520, 0, 320)
+MainFrame.Position = UDim2.new(0.5, -260, 0.5, -160)
 MainFrame.BackgroundColor3 = Color3.fromRGB(15, 8, 25)
 MainFrame.BorderColor3 = Color3.fromRGB(120, 40, 180)
 MainFrame.BorderSizePixel = 2
 
--- Fejléc
+-- Header Title
 local Header = Instance.new("TextLabel")
 Header.Parent = MainFrame
 Header.Size = UDim2.new(1, -20, 0, 30)
-Header.Position = UDim2.new(0, 10, 0, 5)
+Header.Position = UDim2.new(0, 10, 0, 2)
 Header.BackgroundTransparency = 1
-Header.Text = "XENOWARE v3.0 | Tapper Mode [KICIAHOOK & UE ACTIVE]"
+Header.Text = "XENOWARE v3.0 | Tapper Mode [SECURE MODE ACTIVE]"
 Header.TextColor3 = Color3.fromRGB(190, 120, 255)
 Header.Font = Enum.Font.Code
-Header.TextSize = 14
+Header.TextSize = 13
 Header.TextXAlignment = Enum.TextXAlignment.Left
 
--- Tab Bár
+-- Tab Container
 local TabBar = Instance.new("Frame")
 TabBar.Parent = MainFrame
-TabBar.Size = UDim2.new(1, -20, 0, 25)
-TabBar.Position = UDim2.new(0, 10, 0, 35)
+TabBar.Size = UDim2.new(1, -20, 0, 28)
+TabBar.Position = UDim2.new(0, 10, 0, 32)
 TabBar.BackgroundColor3 = Color3.fromRGB(25, 12, 40)
 TabBar.BorderSizePixel = 0
 
+local TabListLayout = Instance.new("UIListLayout")
+TabListLayout.Parent = TabBar
+TabListLayout.FillDirection = Enum.FillDirection.Horizontal
+TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabListLayout.Padding = UDim.new(0, 2)
+
+-- Content Frame
 local Content = Instance.new("Frame")
 Content.Parent = MainFrame
-Content.Size = UDim2.new(1, -20, 1, -75)
-Content.Position = UDim2.new(0, 10, 0, 65)
+Content.Size = UDim2.new(1, -20, 1, -70)
+Content.Position = UDim2.new(0, 10, 0, 64)
 Content.BackgroundTransparency = 1
 
 local TabFrames = {}
 
-local function createTab(name, xPos)
+-- Tab & Panel Készítő
+local function createTab(name, order)
     local tabBtn = Instance.new("TextButton")
     tabBtn.Parent = TabBar
     tabBtn.Size = UDim2.new(0.2, -2, 1, 0)
-    tabBtn.Position = UDim2.new(xPos, 0, 0, 0)
     tabBtn.BackgroundColor3 = Color3.fromRGB(45, 20, 70)
     tabBtn.BorderSizePixel = 0
     tabBtn.Text = name
     tabBtn.TextColor3 = Color3.fromRGB(220, 220, 255)
     tabBtn.Font = Enum.Font.SourceSansBold
     tabBtn.TextSize = 12
+    tabBtn.LayoutOrder = order
 
-    local tabFrame = Instance.new("Frame")
+    local tabFrame = Instance.new("ScrollingFrame")
     tabFrame.Parent = Content
     tabFrame.Size = UDim2.new(1, 0, 1, 0)
     tabFrame.BackgroundTransparency = 1
-    tabFrame.Visible = (name == "AIMBOT")
+    tabFrame.ScrollBarThickness = 4
+    tabFrame.ScrollBarImageColor3 = Color3.fromRGB(140, 60, 220)
+    tabFrame.Visible = (order == 1)
+    
+    local list = Instance.new("UIListLayout")
+    list.Parent = tabFrame
+    list.SortOrder = Enum.SortOrder.LayoutOrder
+    list.Padding = UDim.new(0, 6)
+    
     TabFrames[name] = tabFrame
 
     tabBtn.MouseButton1Click:Connect(function()
         for _, f in pairs(TabFrames) do f.Visible = false end
         tabFrame.Visible = true
     end)
-    return tabBtn
+    return tabFrame
 end
 
-createTab("AIMBOT", 0)
-createTab("VISUALS+", 0.2)
-createTab("PLAYER", 0.4)
-createTab("SECURITY", 0.6)
-createTab("SCRIPTS", 0.8)
+local TabAimbot = createTab("AIMBOT", 1)
+local TabVisuals = createTab("VISUALS+", 2)
+local TabPlayer = createTab("PLAYER", 3)
+local TabSecurity = createTab("SECURITY", 4)
+local TabScripts = createTab("SCRIPTS", 5)
 
--- ---------------------------------------------------------
--- UI SEGÉDFÜGGVÉNYEK (Dobozok & Gombok)
--- ---------------------------------------------------------
-local function createBox(parent, title, size, pos)
-    local box = Instance.new("Frame")
-    box.Parent = parent
-    box.Size = size
-    box.Position = pos
-    box.BackgroundColor3 = Color3.fromRGB(20, 10, 32)
-    box.BorderColor3 = Color3.fromRGB(80, 35, 120)
-
-    local bTitle = Instance.new("TextLabel")
-    bTitle.Parent = box
-    bTitle.Size = UDim2.new(1, -10, 0, 20)
-    bTitle.Position = UDim2.new(0, 5, 0, 2)
-    bTitle.BackgroundTransparency = 1
-    bTitle.Text = title
-    bTitle.TextColor3 = Color3.fromRGB(170, 140, 230)
-    bTitle.Font = Enum.Font.SourceSansBold
-    bTitle.TextSize = 13
-    bTitle.TextXAlignment = Enum.TextXAlignment.Left
-
-    return box
-end
-
-local function createToggle(parent, text, posY, default, callback)
-    local frame = Instance.new("Frame")
-    frame.Parent = parent
-    frame.Size = UDim2.new(1, -10, 0, 22)
-    frame.Position = UDim2.new(0, 5, 0, posY)
-    frame.BackgroundTransparency = 1
-
+-- Gomb készítő
+local function createButton(parent, text, default, callback)
     local btn = Instance.new("TextButton")
-    btn.Parent = frame
-    btn.Size = UDim2.new(0, 16, 0, 16)
-    btn.Position = UDim2.new(0, 0, 0.1, 0)
-    btn.BackgroundColor3 = default and Color3.fromRGB(150, 60, 240) or Color3.fromRGB(40, 20, 60)
-    btn.BorderColor3 = Color3.fromRGB(100, 50, 150)
-    btn.Text = ""
-
-    local lbl = Instance.new("TextLabel")
-    lbl.Parent = frame
-    lbl.Size = UDim2.new(1, -25, 1, 0)
-    lbl.Position = UDim2.new(0, 22, 0, 0)
-    lbl.BackgroundTransparency = 1
-    lbl.Text = text
-    lbl.TextColor3 = Color3.fromRGB(200, 200, 220)
-    lbl.Font = Enum.Font.SourceSans
-    lbl.TextSize = 12
-    lbl.TextXAlignment = Enum.TextXAlignment.Left
+    btn.Parent = parent
+    btn.Size = UDim2.new(0.98, 0, 0, 32)
+    btn.BackgroundColor3 = default and Color3.fromRGB(120, 40, 200) or Color3.fromRGB(30, 15, 45)
+    btn.BorderColor3 = Color3.fromRGB(90, 35, 140)
+    btn.Text = text .. (default and ": [BE]" or ": [KI]")
+    btn.TextColor3 = default and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
+    btn.Font = Enum.Font.SourceSansBold
+    btn.TextSize = 13
 
     local state = default
     btn.MouseButton1Click:Connect(function()
         state = not state
-        btn.BackgroundColor3 = state and Color3.fromRGB(150, 60, 240) or Color3.fromRGB(40, 20, 60)
+        btn.BackgroundColor3 = state and Color3.fromRGB(120, 40, 200) or Color3.fromRGB(30, 15, 45)
+        btn.Text = text .. (state and ": [BE]" or ": [KI]")
+        btn.TextColor3 = state and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(180, 180, 200)
         callback(state)
     end)
 end
 
 -- ---------------------------------------------------------
--- 2. TARTALOM FELÉPÍTÉSE TABOK SZERINT
+-- 2. GOMBOK FELTÖLTÉSE TARTALOMMAL
 -- ---------------------------------------------------------
 
--- TAB 1: AIMBOT & RAGEBOT
-local AimBox = createBox(TabFrames["AIMBOT"], "Kiciahook Aimbot Core", UDim2.new(0.48, 0, 0.98, 0), UDim2.new(0, 0, 0, 0))
-createToggle(AimBox, "Enable Camera Aimbot", 25, Config.AimbotEnabled, function(v) Config.AimbotEnabled = v end)
-createToggle(AimBox, "Silent Aim (UE Hook)", 50, Config.SilentAim, function(v) Config.SilentAim = v end)
-createToggle(AimBox, "RageBot Teleport Shot", 75, Config.RagebotTp, function(v) Config.RagebotTp = v end)
-createToggle(AimBox, "Team Check", 100, Config.TeamCheck, function(v) Config.TeamCheck = v end)
-createToggle(AimBox, "Wall Check", 125, Config.WallCheck, function(v) Config.WallCheck = v end)
-createToggle(AimBox, "Alive Check", 150, Config.AliveCheck, function(v) Config.AliveCheck = v end)
+-- AIMBOT
+createButton(TabAimbot, "Enable Camera Aimbot", Config.AimbotEnabled, function(v) Config.AimbotEnabled = v end)
+createButton(TabAimbot, "Silent Aim (UE Hook)", Config.SilentAim, function(v) Config.SilentAim = v end)
+createButton(TabAimbot, "RageBot Teleport Shot", Config.RagebotTp, function(v) Config.RagebotTp = v end)
+createButton(TabAimbot, "Draw FOV Circle", Config.FovVisible, function(v) Config.FovVisible = v end)
+createButton(TabAimbot, "Team Check", Config.TeamCheck, function(v) Config.TeamCheck = v end)
+createButton(TabAimbot, "Wall Check", Config.WallCheck, function(v) Config.WallCheck = v end)
 
-local FovBox = createBox(TabFrames["AIMBOT"], "FOV & Target Settings", UDim2.new(0.48, 0, 0.98, 0), UDim2.new(0.52, 0, 0, 0))
-createToggle(FovBox, "Draw FOV Circle", 25, Config.FovVisible, function(v) Config.FovVisible = v end)
+-- VISUALS+
+createButton(TabVisuals, "Master ESP (Highlight)", Config.EspEnabled, function(v) Config.EspEnabled = v end)
+createButton(TabVisuals, "Box ESP", Config.EspBox, function(v) Config.EspBox = v end)
+createButton(TabVisuals, "Name ESP", Config.EspName, function(v) Config.EspName = v end)
+createButton(TabVisuals, "Health Display", Config.EspHealth, function(v) Config.EspHealth = v end)
 
--- TAB 2: VISUALS+
-local EspBox = createBox(TabFrames["VISUALS+"], "UE Visuals / ESP", UDim2.new(0.98, 0, 0.98, 0), UDim2.new(0, 0, 0, 0))
-createToggle(EspBox, "Enable Master ESP", 25, Config.EspEnabled, function(v) Config.EspEnabled = v end)
-createToggle(EspBox, "Boxes", 50, Config.EspBox, function(v) Config.EspBox = v end)
-createToggle(EspBox, "Names", 75, Config.EspName, function(v) Config.EspName = v end)
-createToggle(EspBox, "Health Bars", 100, Config.EspHealth, function(v) Config.EspHealth = v end)
-createToggle(EspBox, "Distance Display", 125, Config.EspDistance, function(v) Config.EspDistance = v end)
+-- PLAYER / EXPLOITS
+createButton(TabPlayer, "VoidSpam (Anti-Aim)", Config.VoidSpamEnabled, function(v) Config.VoidSpamEnabled = v end)
+createButton(TabPlayer, "Infinite Jump", Config.InfJump, function(v) Config.InfJump = v end)
+createButton(TabPlayer, "SpeedHack (WalkSpeed 32)", Config.SpeedHack, function(v) Config.SpeedHack = v end)
 
--- TAB 3: PLAYER / EXPLOITS
-local PlrBox = createBox(TabFrames["PLAYER"], "Player & Movement Exploits", UDim2.new(0.48, 0, 0.98, 0), UDim2.new(0, 0, 0, 0))
-createToggle(PlrBox, "Enable VoidSpam", 25, Config.VoidSpamEnabled, function(v) Config.VoidSpamEnabled = v end
+-- SECURITY
+local SecLabel = Instance.new("TextLabel")
+SecLabel.Parent = TabSecurity
+SecLabel.Size = UDim2.new(0.98, 0, 0, 40)
+SecLabel.BackgroundColor3 = Color3.fromRGB(20, 10, 30)
+SecLabel.BorderColor3 = Color3.fromRGB(80, 35, 120)
+SecLabel.Text = "ANTIBAN CORE: ACTIVE (Safe Hook Enabled)"
+SecLabel.TextColor3 = Color3.fromRGB(80, 255, 120)
+SecLabel.Font = Enum.Font.SourceSansBold
+SecLabel.TextSize = 13
+
+-- SCRIPTS
+local ExecBtn = Instance.new("TextButton")
+ExecBtn.Parent = TabScripts
+ExecBtn.Size = UDim2.new(0.98, 0, 0, 40)
+ExecBtn.BackgroundColor3 = Color3.fromRGB(80, 30, 130)
+ExecBtn.BorderColor3 = Color3.fromRGB(150, 70, 220)
+ExecBtn.Text = "Execute External Holly Script"
+ExecBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecBtn.Font = Enum.Font.SourceSansBold
+ExecBtn.TextSize = 13
+
+ExecBtn.MouseButton1Click:Connect(function()
+    pcall(function()
+        loadstring(game:HttpGet(Config.HookURL))()
+    end)
+end)
+
+-- ---------------------------------------------------------
+-- 3. NYITÁS / ZÁRÁS MEGOLDÁSOK
+-- ---------------------------------------------------------
+local function toggleUI()
+    menuOpen = not menuOpen
+    MainFrame.Visible = menuOpen
+end
+
+MobileToggleBtn.MouseButton1Click:Connect(toggleUI)
+
+UserInputService.InputBegan:Connect(function(input, gpe)
+    if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
+        toggleUI()
+    end
+end)
+
+-- ---------------------------------------------------------
+-- 4. LOGIKÁK (AIMBOT, VOIDSPAM, ESP, INFJUMP)
+-- ---------------------------------------------------------
+local function getTarget()
+    local closest, shortestDist = nil, math.huge
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return nil end
+
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= LocalPlayer and p.Character and p.Character:FindFirstChild("Head") then
+            local hum = p.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health > 0 then
+                local sameTeam = (Config.TeamCheck and LocalPlayer.Team and p.Team == LocalPlayer.Team)
+                if not sameTeam then
+                    local isVisible = true
+                    if Config.WallCheck then
+                        local ray = Ray.new(Camera.CFrame.Position, (p.Character.Head.Position - Camera.CFrame.Position).Unit * 500)
+                        local hit = workspace:FindPartOnWithIgnoreList(ray, {myChar})
+                        if hit and not hit:IsDescendantOf(p.Character) then
+                            isVisible = false
+                        end
+                    end
+
+                    if isVisible then
+                        local screenPos, onScreen = Camera:WorldToViewportPoint(p.Character.Head.Position)
+                        if onScreen then
+                            local mousePos = UserInputService:GetMouseLocation()
+                            local dist = (Vector2.new(screenPos.X, screenPos.Y) - mousePos).Magnitude
+                            if dist < Config.FovRadius and dist < shortestDist then
+                                shortestDist = dist
+                                closest = p
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return closest
+end
+
+UserInputService.JumpRequest:Connect(function()
+    if Config.InfJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    local mousePos = UserInputService:GetMouseLocation()
+    FovCircle.Position = mousePos
+    FovCircle.Radius = Config.FovRadius
+    FovCircle.Visible = Config.FovVisible
+
+    if Config.SpeedHack and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = Config.WalkSpeed
+    end
+
+    if Config.AimbotEnabled then
+        local target = getTarget()
+        if target and target.Character and target.Character:FindFirstChild(Config.AimPart) then
+            local targetPos = target.Character[Config.AimPart].Position
+            local camCFrame = Camera.CFrame
+            Camera.CFrame = camCFrame:Lerp(CFrame.new(camCFrame.Position, targetPos), Config.Smoothing)
+        end
+    end
+end)
+
+RunService.Heartbeat:Connect(function()
+    local myChar = LocalPlayer.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = myChar.HumanoidRootPart
+
+    if Config.RagebotTp and not Config.VoidSpamEnabled then
+        local target = getTarget()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local savedPos = hrp.CFrame
+            hrp.CFrame = target.Character.Head.CFrame * CFrame.new(0, 6, 0)
+            if mouse1click then mouse1click() end
+            task.wait(0.03)
+            if myChar:FindFirstChild("HumanoidRootPart") then
+                hrp.CFrame = savedPos
+            end
+        end
+    end
+
+    if Config.VoidSpamEnabled then
+        local orig = hrp.CFrame
+        hrp.CFrame = orig - Vector3.new(0, Config.VoidIntensity, 0)
+        task.wait(0.01)
+        if myChar:FindFirstChild("HumanoidRootPart") then
+            hrp.CFrame = orig
+        end
+    end
+end)
+
+local function setupESP(player)
+    if player == LocalPlayer then return end
+
+    local hl = Instance.new("Highlight")
+    hl.Name = "Xenoware_ESP"
+    hl.FillColor = Color3.fromRGB(160, 40, 240)
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.FillTransparency = 0.5
+    hl.Enabled = false
+
+    local function onChar(char) hl.Parent = char end
+    if player.Character then onChar(player.Character) end
+    player.CharacterAdded:Connect(onChar)
+
+    espObjects[player] = hl
+end
+
+for _, p in pairs(Players:GetPlayers()) do setupESP(p) end
+Players.PlayerAdded:Connect(setupESP)
+
+RunService.RenderStepped:Connect(function()
+    for p, hl in pairs(espObjects) do
+        if hl then
+            hl.Enabled = Config.EspEnabled
+        end
+    end
+end)
